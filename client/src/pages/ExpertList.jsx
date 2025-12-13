@@ -13,7 +13,8 @@ const ExpertList = () => {
   useEffect(() => {
     const fetchExperts = async () => {
       try {
-        const { data } = await axios.get('/experts');
+        const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+       const { data } = await axios.get(`${API_BASE_URL}/api/experts`);
         setExperts(data);
       } catch (error) {
         console.error(error);

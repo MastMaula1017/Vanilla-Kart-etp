@@ -7,7 +7,9 @@ import { Send, Paperclip, Video, File, X, MoreVertical, Phone, Video as VideoIco
 import SpotlightCard from '../components/SpotlightCard';
 import VideoCallModal from '../components/VideoCallModal';
 
-const ENDPOINT = 'http://localhost:5000';
+import { API_URL, SOCKET_URL, BASE_URL } from '../config';
+
+const ENDPOINT = SOCKET_URL;
 
 const ChatPage = () => {
   const { userId } = useParams();
@@ -349,14 +351,14 @@ const ChatPage = () => {
                                         <div className="flex flex-col gap-2">
                                             {msg.fileUrl?.match(/\.(jpg|jpeg|png|gif)$/i) ? (
                                                 <img 
-                                                    src={`http://localhost:5000${msg.fileUrl}`} 
+                                                    src={`${BASE_URL}${msg.fileUrl}`} 
                                                     alt="attachment" 
                                                     className="rounded-lg max-h-60 object-cover cursor-pointer hover:opacity-90 transition-opacity"
-                                                    onClick={() => window.open(`http://localhost:5000${msg.fileUrl}`, '_blank')}
+                                                    onClick={() => window.open(`${BASE_URL}${msg.fileUrl}`, '_blank')}
                                                 />
                                             ) : (
                                                 <a 
-                                                    href={`http://localhost:5000${msg.fileUrl}`} 
+                                                    href={`${BASE_URL}${msg.fileUrl}`} 
                                                     target="_blank" 
                                                     rel="noreferrer"
                                                     className="flex items-center gap-3 p-3 bg-white/10 rounded-lg hover:bg-white/20 transition-colors"
