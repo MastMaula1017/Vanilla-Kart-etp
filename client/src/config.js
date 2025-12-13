@@ -8,6 +8,6 @@ const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
 export const SOCKET_URL = API_URL.replace(/\/api\/?$/, '');
 export const BASE_URL = SOCKET_URL; 
 
-console.log('API config loaded:', { API_URL, SOCKET_URL });
+export const BASE_URL = SOCKET_URL; 
 
 export { API_URL };
