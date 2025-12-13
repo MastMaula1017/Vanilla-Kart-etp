@@ -1,0 +1,13 @@
+\l or \list -> list all the databases
+\c database_name -> connect to a database
+\d -> list all the tables in the current database
+\d table_name -> describe the table
+\du -> list all the users  
+\dn -> list all the schemas
+\dv -> list all the views   
+\q -> quit
+\h -> help
+\conninfo -> connection info
+\password -> change password    
+create database db_name;
+drop database db_name;
