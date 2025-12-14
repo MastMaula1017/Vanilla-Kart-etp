@@ -7,15 +7,38 @@ const ContactForm = () => {
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
   const [status, setStatus] = useState('idle'); // idle, submitting, success, error
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus('submitting');
-    // Simulate API call
-    setTimeout(() => {
+    
+    try {
+      // Use the API URL from environment variable or default to localhost
+      // Note: In typical Vite setup, we might use a proxy, but here we'll use a relative path if proxy is set up or full URL
+      // Checking if axios is available or just use fetch for simplicity here to avoid breaking if axios isn't imported
+      
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/questions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Something went wrong');
+      }
+
       setStatus('success');
       setFormData({ name: '', email: '', message: '' });
       setTimeout(() => setStatus('idle'), 3000);
-    }, 1500);
+    } catch (error) {
+      console.error('Error sending message:', error);
+      setStatus('error');
+      // Reset status after 3 seconds so user can try again
+      setTimeout(() => setStatus('idle'), 3000);
+    }
   };
 
   return (
