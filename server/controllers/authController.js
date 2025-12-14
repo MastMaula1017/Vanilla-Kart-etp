@@ -155,6 +155,7 @@ const forgotPassword = async (req, res) => {
 
       res.status(200).json({ success: true, data: 'Email sent' });
     } catch (error) {
+      console.error("Email send error:", error);
       user.resetPasswordOtp = undefined;
       user.resetPasswordOtpExpire = undefined;
       await user.save();
