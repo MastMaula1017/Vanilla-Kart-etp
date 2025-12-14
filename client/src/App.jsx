@@ -8,6 +8,8 @@ import ExpertList from './pages/ExpertList';
 import ExpertProfile from './pages/ExpertProfile';
 import ChatPage from './pages/ChatPage';
 import ProfilePage from './pages/ProfilePage';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import ProtectedRoute from './components/ProtectedRoute';
 
 import Footer from './components/Footer';
@@ -21,6 +23,8 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/experts" element={<ExpertList />} />
           <Route path="/experts/:id" element={<ExpertProfile />} />
           

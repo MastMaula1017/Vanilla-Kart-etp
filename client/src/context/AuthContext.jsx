@@ -62,6 +62,24 @@ export const AuthProvider = ({ children }) => {
     delete axios.defaults.headers.common['Authorization'];
   };
 
+  const forgotPassword = async (email) => {
+    try {
+      const { data } = await axios.post('/auth/forgot-password', { email });
+      return data;
+    } catch (error) {
+      throw error.response?.data?.message || 'Failed to send reset email';
+    }
+  };
+
+  const resetPassword = async (email, otp, newPassword) => {
+    try {
+      const { data } = await axios.post('/auth/reset-password', { email, otp, newPassword });
+      return data;
+    } catch (error) {
+      throw error.response?.data?.message || 'Failed to reset password';
+    }
+  };
+
   const updateUser = (data) => {
     setUser(data);
     // data should be the full user object with token
@@ -80,7 +98,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, loading, updateUser }}>
+    <AuthContext.Provider value={{ user, login, register, logout, loading, updateUser, forgotPassword, resetPassword }}>
       {children}
     </AuthContext.Provider>
   );

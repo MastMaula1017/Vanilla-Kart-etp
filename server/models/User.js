@@ -16,6 +16,8 @@ const userSchema = new mongoose.Schema({
       endTime: { type: String }   // e.g., "17:00"
     }]
   },
+  resetPasswordOtp: String,
+  resetPasswordOtpExpire: Date,
   createdAt: { type: Date, default: Date.now }
 });
 
