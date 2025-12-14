@@ -144,13 +144,52 @@ const forgotPassword = async (req, res) => {
     await user.save();
 
     // Create reset message
-    const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please use the following OTP to reset your password:\n\n${otp}\n\nThis OTP is valid for 10 minutes.`;
+    // Create reset message
+    const clientUrl = process.env.CLIENT_URL || 'https://joyful-gaufre-719afc.netlify.app';
+    const resetUrl = `${clientUrl}/reset-password`;
+
+    const message = `Your password reset OTP is ${otp}`; // Fallback text
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; background-color: #f4f4f4; color: #333; margin: 0; padding: 0; }
+          .container { width: 100%; max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+          .header { background-color: #4F46E5; color: #ffffff; padding: 20px; text-align: center; }
+          .content { padding: 30px; text-align: center; }
+          .otp-code { font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #4F46E5; margin: 20px 0; background: #eef2ff; padding: 10px 20px; display: inline-block; border-radius: 8px; }
+          .btn { display: inline-block; background-color: #4F46E5; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; margin-top: 20px; }
+          .footer { background-color: #f4f4f4; color: #777; padding: 10px; text-align: center; font-size: 12px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>Password Reset Request</h1>
+          </div>
+          <div class="content">
+            <p>You requested a password reset. Use the OTP below to proceed:</p>
+            <div class="otp-code">${otp}</div>
+            <p>Or click the button below to reset your password:</p>
+            <a href="${resetUrl}" class="btn">Reset Password</a>
+            <p style="margin-top: 20px; font-size: 14px; color: #666;">This OTP is valid for 10 minutes.</p>
+          </div>
+          <div class="footer">
+            <p>If you didn't request this, please ignore this email.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
 
     try {
       await sendEmail({
         email: user.email,
-        subject: 'Password Reset OTP',
-        message
+        subject: 'Password Reset Request',
+        message,
+        html
       });
 
       res.status(200).json({ success: true, data: 'Email sent' });
