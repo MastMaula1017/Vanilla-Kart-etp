@@ -1,31 +1,27 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
 const sendEmail = async (options) => {
-  // Create transporter
-  // Resend SMTP Configuration
-  const transporter = nodemailer.createTransport({
-    host: 'smtp.resend.com',
-    port: 465,
-    secure: true,
-    auth: {
-      user: 'resend',
-      pass: process.env.RESEND_API_KEY,
-    },
-    logger: true,
-    debug: true
-  });
+  const resend = new Resend(process.env.RESEND_API_KEY);
 
-  // Define email options
-  const mailOptions = {
-    from: process.env.EMAIL_FROM || process.env.EMAIL_USER, // Use custom name or default to user email
-    to: options.email,
-    subject: options.subject,
-    text: options.message,
-    html: options.html, // Optional: if we want to send HTML emails later
-  };
+  try {
+    const { data, error } = await resend.emails.send({
+      from: process.env.EMAIL_FROM || 'onboarding@resend.dev',
+      to: options.email,
+      subject: options.subject,
+      text: options.message,
+      html: options.html, // Optional
+    });
 
-  // Send email
-  await transporter.sendMail(mailOptions);
+    if (error) {
+      console.error("Resend API Error:", error);
+      throw new Error(error.message);
+    }
+
+    console.log("Email sent successfully:", data);
+  } catch (err) {
+    console.error("Send Email Wrapper Error:", err);
+    throw err;
+  }
 };
 
 module.exports = sendEmail;
