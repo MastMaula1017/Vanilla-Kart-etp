@@ -2,12 +2,14 @@ import { useState, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
 import CardSwap, { Card } from '../components/CardSwap';
-import { Mail, Lock, ArrowRight, Video, ShieldCheck, CreditCard } from 'lucide-react';
+import { Mail, Lock, ArrowRight, Video, ShieldCheck, CreditCard, Eye, EyeOff } from 'lucide-react';
 import ShimmerButton from '../components/magicui/ShimmerButton';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useContext(AuthContext);
@@ -18,7 +20,7 @@ const Login = () => {
     setIsLoading(true);
     setError('');
     try {
-      await login(email, password);
+      await login(email, password, rememberMe);
       // Simulate slight delay for effect
       setTimeout(() => navigate('/dashboard'), 500); 
     } catch (err) {
@@ -122,14 +124,37 @@ const Login = () => {
               <div className="relative">
                 <Lock className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
                 <input
-                  type="password"
-                  className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+                  type={showPassword ? "text" : "password"}
+                  className="w-full pl-12 pr-12 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   placeholder="••••••••"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-3.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
+                </button>
               </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input 
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                />
+                <span className="text-sm text-gray-600 dark:text-gray-400">Remember me</span>
+              </label>
             </div>
 
             <button 

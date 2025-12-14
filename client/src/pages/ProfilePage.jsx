@@ -5,7 +5,7 @@ import SpotlightCard from '../components/SpotlightCard';
 import { User, Mail, Lock, Save, AlertCircle, CheckCircle } from 'lucide-react';
 
 const ProfilePage = () => {
-  const { user, login } = useContext(AuthContext); // Re-using login to update context user isn't ideal, but we can manually update localstorage/state if we had a method. For now we might need to refresh or update context manually.
+  const { user, login, updateUser } = useContext(AuthContext);
   // Actually, updating user in AuthContext usually requires a setUser method exposed. 
   // Checking AuthContext, it exposes 'user' and 'register'/'login'. It doesn't expose 'setUser'.
   // I should probably update AuthContext to expose a way to update the user state purely, or just trigger a re-fetch.
@@ -65,11 +65,8 @@ const ProfilePage = () => {
       });
       
       // Update local storage
-      localStorage.setItem('userInfo', JSON.stringify(data));
-      // Ideally update context state here. Since I can't easily access setUser from here without modifying AuthContext or hacking it,
-      // I will force a window reload to reflect changes for now, or just trust the user sees the success message.
-      // A reload on profile update is acceptable for mvp.
-      window.location.reload(); 
+      // Update user in context and storage (handles local/session storage logic internally)
+      updateUser(data);
       
       setMessage({ type: 'success', text: 'Profile updated successfully' });
     } catch (error) {

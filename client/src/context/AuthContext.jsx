@@ -12,7 +12,9 @@ export const AuthProvider = ({ children }) => {
   axios.defaults.baseURL = API_URL;
 
   useEffect(() => {
-    const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+    // Check localStorage first, then sessionStorage
+    const userInfo = JSON.parse(localStorage.getItem('userInfo')) || JSON.parse(sessionStorage.getItem('userInfo'));
+    
     if (userInfo) {
       setUser(userInfo);
       // Set auth token header
@@ -21,11 +23,17 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  const login = async (email, password) => {
+  const login = async (email, password, rememberMe = false) => {
     try {
       const { data } = await axios.post('/auth/login', { email, password });
       setUser(data);
-      localStorage.setItem('userInfo', JSON.stringify(data));
+      
+      if (rememberMe) {
+        localStorage.setItem('userInfo', JSON.stringify(data));
+      } else {
+        sessionStorage.setItem('userInfo', JSON.stringify(data));
+      }
+      
       axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
       return data;
     } catch (error) {
@@ -37,6 +45,8 @@ export const AuthProvider = ({ children }) => {
     try {
       const { data } = await axios.post('/auth/register', userData);
       setUser(data);
+      // Default to localStorage for register for better UX, or could be argument. 
+      // Let's default to localStorage as standard signup flow usually implies "keep me logged in"
       localStorage.setItem('userInfo', JSON.stringify(data));
       axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
       return data;
@@ -47,12 +57,30 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem('userInfo');
+    sessionStorage.removeItem('userInfo');
     setUser(null);
     delete axios.defaults.headers.common['Authorization'];
   };
 
+  const updateUser = (data) => {
+    setUser(data);
+    // data should be the full user object with token
+    
+    // Check where it was stored to update the correct one
+    if (localStorage.getItem('userInfo')) {
+        localStorage.setItem('userInfo', JSON.stringify(data));
+    } else {
+        // If not in local, put in session (or if it was in session)
+        sessionStorage.setItem('userInfo', JSON.stringify(data));
+    }
+    
+    if (data.token) {
+        axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, register, logout, loading, updateUser }}>
       {children}
     </AuthContext.Provider>
   );
