@@ -13,6 +13,11 @@ import ResetPassword from './pages/ResetPassword';
 import ProtectedRoute from './components/ProtectedRoute';
 
 import Footer from './components/Footer';
+import AdminLayout from './components/AdminLayout';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminUsers from './pages/admin/AdminUsers';
+import AdminExperts from './pages/admin/AdminExperts';
+import AdminInquiries from './pages/admin/AdminInquiries';
 
 function App() {
   return (
@@ -45,6 +50,18 @@ function App() {
               <ChatPage />
             </ProtectedRoute>
           } />
+
+          {/* Admin Routes */}
+          <Route path="/admin" element={
+            <ProtectedRoute requiredRole="admin">
+              <AdminLayout />
+            </ProtectedRoute>
+          }>
+            <Route index element={<AdminDashboard />} />
+            <Route path="users" element={<AdminUsers />} />
+            <Route path="experts" element={<AdminExperts />} />
+            <Route path="inquiries" element={<AdminInquiries />} />
+          </Route>
         </Routes>
       </div>
       <Footer />

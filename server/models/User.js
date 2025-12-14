@@ -4,7 +4,11 @@ const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  role: { type: String, enum: ['customer', 'expert', 'admin'], default: 'customer' },
+  roles: { 
+    type: [String], 
+    enum: ['customer', 'expert', 'admin'], 
+    default: ['customer'] 
+  },
   // Expert specific fields
   expertProfile: {
     specialization: { type: String }, // e.g., Finance, Education
@@ -20,5 +24,11 @@ const userSchema = new mongoose.Schema({
   resetPasswordOtpExpire: Date,
   createdAt: { type: Date, default: Date.now }
 });
+
+const bcrypt = require('bcryptjs');
+
+userSchema.methods.matchPassword = async function (enteredPassword) {
+  return await bcrypt.compare(enteredPassword, this.password);
+};
 
 module.exports = mongoose.model('User', userSchema);

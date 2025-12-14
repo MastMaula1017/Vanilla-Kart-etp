@@ -5,7 +5,7 @@ const User = require('../models/User');
 // @access  Public
 const getExperts = async (req, res) => {
   try {
-    const experts = await User.find({ role: 'expert' }).select('-password');
+    const experts = await User.find({ roles: 'expert' }).select('-password');
     res.json(experts);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -18,7 +18,7 @@ const getExperts = async (req, res) => {
 const getExpertById = async (req, res) => {
   try {
     const expert = await User.findById(req.params.id).select('-password');
-    if (expert && expert.role === 'expert') {
+    if (expert && expert.roles.includes('expert')) {
       res.json(expert);
     } else {
       res.status(404).json({ message: 'Expert not found' });
@@ -47,7 +47,7 @@ const updateExpertProfile = async (req, res) => {
         _id: updatedUser._id,
         name: updatedUser.name,
         email: updatedUser.email,
-        role: updatedUser.role,
+        roles: updatedUser.roles,
         expertProfile: updatedUser.expertProfile
       });
     } else {

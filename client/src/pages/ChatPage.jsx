@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axios from '../utils/axios';
 import { io } from 'socket.io-client';
 import AuthContext from '../context/AuthContext';
 import { Send, Paperclip, Video, File, X, MoreVertical, Phone, Video as VideoIcon, Image as ImageIcon, User } from 'lucide-react';

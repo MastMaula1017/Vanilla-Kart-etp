@@ -61,6 +61,15 @@ const Navbar = () => {
                     >
                         Dashboard
                     </Link>
+                    {user.roles?.includes('admin') && (
+                      <Link 
+                          to="/admin" 
+                          className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+                          onClick={() => setIsMenuOpen(false)}
+                      >
+                          Admin Panel
+                      </Link>
+                    )}
                     <Link 
                         to="/profile" 
                         className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center justify-between"

@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from 'react';
-import axios from 'axios';
+import axios from '../utils/axios';
 import AuthContext from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 
@@ -50,14 +50,19 @@ const Dashboard = () => {
             <table className="w-full text-left">
               <thead>
                 <tr className="bg-gray-50 text-gray-600 text-sm uppercase">
-                  <th className="p-4">Date & Time</th>
-                  <th className="p-4">{user.role === 'customer' ? 'Expert' : 'Customer'}</th>
+                  <th className="p-4">{user.roles?.includes('customer') ? 'Expert' : 'Customer'}</th>
+                  <th className="p-4">Participant</th>
                   <th className="p-4">Status</th>
                   <th className="p-4">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
-                {appointments.map(app => (
+                {appointments.map(app => {
+                  const isMyAppointmentAsCustomer = app.customer?._id === user._id;
+                  const counterpart = isMyAppointmentAsCustomer ? app.expert : app.customer;
+                  const counterpartLabel = isMyAppointmentAsCustomer ? 'Expert' : 'Customer';
+
+                  return (
                   <tr key={app._id}>
                     <td className="p-4">
                       <div className="font-semibold">{new Date(app.date).toLocaleDateString()}</div>
@@ -65,10 +70,10 @@ const Dashboard = () => {
                     </td>
                     <td className="p-4">
                       <div className="font-medium">
-                        {user.role === 'customer' ? app.expert?.name : app.customer?.name}
+                        {user.roles?.includes('customer') ? app.expert?.name : app.customer?.name}
                       </div>
                       <div className="text-sm text-gray-500">
-                         {user.role === 'customer' ? app.expert?.email : app.customer?.email}
+                         {user.roles?.includes('customer') ? app.expert?.email : app.customer?.email}
                       </div>
                     </td>
                     <td className="p-4">
@@ -82,14 +87,14 @@ const Dashboard = () => {
                     <td className="p-4 space-x-2">
                        {/* Chat Button */}
                        <Link 
-                         to={`/chat/${user.role === 'customer' ? app.expert?._id : app.customer?._id}`}
+                         to={`/chat/${user.roles?.includes('customer') ? app.expert?._id : app.customer?._id}`}
                          className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded hover:bg-indigo-100 text-sm"
                        >
                          Chat
                        </Link>
 
                        {/* Expert Actions */}
-                       {user.role === 'expert' && app.status === 'pending' && (
+                       {user.roles?.includes('expert') && app.status === 'pending' && (
                          <>
                            <button 
                              onClick={() => handleStatusUpdate(app._id, 'confirmed')}
@@ -107,7 +112,8 @@ const Dashboard = () => {
                        )}
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>

@@ -33,6 +33,7 @@ app.use('/api/reviews', require('./routes/reviewRoutes'));
 app.use('/api/messages', require('./routes/messageRoutes'));
 app.use('/api/upload', require('./routes/uploadRoutes'));
 app.use('/api/questions', require('./routes/questionRoutes'));
+app.use('/api/admin', require('./routes/adminRoutes'));
 
 // Socket.io Setup
 const io = new Server(server, {

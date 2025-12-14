@@ -31,14 +31,13 @@ const createAppointment = async (req, res) => {
 // @access  Private
 const getAppointments = async (req, res) => {
   try {
-    let appointments;
-    if (req.user.role === 'customer') {
-      appointments = await Appointment.find({ customer: req.user._id }).populate('expert', 'name email expertProfile');
-    } else if (req.user.role === 'expert') {
-      appointments = await Appointment.find({ expert: req.user._id }).populate('customer', 'name email');
-    } else {
-      appointments = await Appointment.find({}).populate('customer', 'name').populate('expert', 'name');
-    }
+    const appointments = await Appointment.find({
+      $or: [{ customer: req.user._id }, { expert: req.user._id }]
+    })
+    .populate('customer', 'name email')
+    .populate('expert', 'name email expertProfile')
+    .sort({ date: 1 }); // Optional: sort by date
+
     res.json(appointments);
   } catch (error) {
     res.status(500).json({ message: error.message });

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios from '../utils/axios';
 import { Link } from 'react-router-dom';
 import SpotlightCard from '../components/SpotlightCard';
 import WordRotate from '../components/magicui/WordRotate';

@@ -23,6 +23,12 @@ const questionSchema = new mongoose.Schema({
     enum: ['pending', 'reviewed', 'replied'],
     default: 'pending'
   },
+  adminReply: {
+    type: String
+  },
+  repliedAt: {
+    type: Date
+  },
   createdAt: {
     type: Date,
     default: Date.now

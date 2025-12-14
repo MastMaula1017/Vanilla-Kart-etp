@@ -21,10 +21,12 @@ const protect = async (req, res, next) => {
   }
 };
 
-const authorize = (...roles) => {
+// Middleware to authorize roles (e.g., 'expert', 'admin')
+const authorize = (...allowedRoles) => {
   return (req, res, next) => {
-    if (!roles.includes(req.user.role)) {
-      return res.status(403).json({ message: `User role ${req.user.role} is not authorized` });
+    // Check if user has at least one of the allowed roles
+    if (!req.user.roles || !req.user.roles.some(role => allowedRoles.includes(role))) {
+      return res.status(403).json({ message: `User roles [${req.user.roles ? req.user.roles.join(', ') : ''}] are not authorized` });
     }
     next();
   };

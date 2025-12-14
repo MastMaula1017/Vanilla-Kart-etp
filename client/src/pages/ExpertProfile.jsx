@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axios from '../utils/axios';
 import AuthContext from '../context/AuthContext';
 import SpotlightCard from '../components/SpotlightCard';
 import { 

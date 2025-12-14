@@ -1,5 +1,5 @@
 import { useState, useContext, useEffect } from 'react';
-import axios from 'axios';
+import axios from '../utils/axios';
 import AuthContext from '../context/AuthContext';
 import SpotlightCard from '../components/SpotlightCard';
 import { User, Mail, Lock, Save, AlertCircle, CheckCircle } from 'lucide-react';
