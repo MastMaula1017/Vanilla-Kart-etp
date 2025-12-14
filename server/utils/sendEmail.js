@@ -2,16 +2,15 @@ const nodemailer = require('nodemailer');
 
 const sendEmail = async (options) => {
   // Create transporter
-  // Hardcoded Gmail config to avoid env var issues and force SSL
+  // Resend SMTP Configuration
   const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
+    host: 'smtp.resend.com',
     port: 465,
-    secure: true, // true for 465, false for other ports
+    secure: true,
     auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
+      user: 'resend',
+      pass: process.env.RESEND_API_KEY,
     },
-    // Enhanced logging for debugging
     logger: true,
     debug: true
   });
