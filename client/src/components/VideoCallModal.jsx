@@ -15,8 +15,17 @@ const VideoCallModal = ({
   videoOn,
   incomingCall,
   answerCall,
-  callerName
+  callerName,
+  remoteStream // New prop
 }) => {
+
+  // Ensure remote stream is attached whenever it changes or video ref is ready
+  useEffect(() => {
+    if (userVideo.current && remoteStream) {
+        userVideo.current.srcObject = remoteStream;
+    }
+  }, [remoteStream, userVideo, callAccepted]);
+
   return (
     <div className="fixed inset-0 z-[100] bg-black/90 flex flex-col items-center justify-center p-4">
       <div className="relative w-full max-w-5xl aspect-video bg-zinc-900 rounded-2xl overflow-hidden shadow-2xl border border-zinc-800">

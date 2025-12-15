@@ -114,6 +114,12 @@ const ChatPage = () => {
     fetchIceServers();
   }, []);
 
+  const [remoteStream, setRemoteStream] = useState(null);
+
+  // ... refs ...
+
+  // ... useEffects ...
+
   const initializePeerConnection = async () => {
       const pc = new RTCPeerConnection({ iceServers });
       peerConnectionRef.current = pc;
@@ -128,9 +134,8 @@ const ChatPage = () => {
       };
 
       pc.ontrack = (event) => {
-          if (userVideo.current) {
-              userVideo.current.srcObject = event.streams[0];
-          }
+          // Store stream in state so we can pass it to the UI cleanly
+          setRemoteStream(event.streams[0]);
       };
 
       // Handle ICE candidates from remote
@@ -298,6 +303,7 @@ const ChatPage = () => {
         {callActive && (
             <VideoCallModal 
                 stream={stream}
+                remoteStream={remoteStream}
                 myVideo={myVideo}
                 userVideo={userVideo}
                 callAccepted={callAccepted}
