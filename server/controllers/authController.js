@@ -272,4 +272,21 @@ const resetPassword = async (req, res) => {
   }
 };
 
-module.exports = { registerUser, loginUser, updateUserProfile, changePassword, forgotPassword, resetPassword };
+// @desc    Get user by ID (Public/Protected - limited info)
+// @route   GET /api/auth/user/:id
+// @access  Protected
+const getUserById = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select('name email roles expertProfile');
+    
+    if (user) {
+      res.json(user);
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = { registerUser, loginUser, updateUserProfile, changePassword, forgotPassword, resetPassword, getUserById };

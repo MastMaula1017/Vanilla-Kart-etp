@@ -50,8 +50,8 @@ const Dashboard = () => {
             <table className="w-full text-left">
               <thead>
                 <tr className="bg-gray-50 text-gray-600 text-sm uppercase">
-                  <th className="p-4">{user.roles?.includes('customer') ? 'Expert' : 'Customer'}</th>
-                  <th className="p-4">Participant</th>
+                  <th className="p-4">Date & Time</th>
+                  <th className="p-4">With</th>
                   <th className="p-4">Status</th>
                   <th className="p-4">Actions</th>
                 </tr>
@@ -60,7 +60,7 @@ const Dashboard = () => {
                 {appointments.map(app => {
                   const isMyAppointmentAsCustomer = app.customer?._id === user._id;
                   const counterpart = isMyAppointmentAsCustomer ? app.expert : app.customer;
-                  const counterpartLabel = isMyAppointmentAsCustomer ? 'Expert' : 'Customer';
+                  // const counterpartLabel = isMyAppointmentAsCustomer ? 'Expert' : 'Customer';  // Unused now as we use generic "With"
 
                   return (
                   <tr key={app._id}>
@@ -70,10 +70,10 @@ const Dashboard = () => {
                     </td>
                     <td className="p-4">
                       <div className="font-medium">
-                        {user.roles?.includes('customer') ? app.expert?.name : app.customer?.name}
+                        {counterpart?.name || 'Unknown'}
                       </div>
                       <div className="text-sm text-gray-500">
-                         {user.roles?.includes('customer') ? app.expert?.email : app.customer?.email}
+                         {counterpart?.email || 'No email'}
                       </div>
                     </td>
                     <td className="p-4">
@@ -87,7 +87,7 @@ const Dashboard = () => {
                     <td className="p-4 space-x-2">
                        {/* Chat Button */}
                        <Link 
-                         to={`/chat/${user.roles?.includes('customer') ? app.expert?._id : app.customer?._id}`}
+                         to={`/chat/${counterpart?._id}`}
                          className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded hover:bg-indigo-100 text-sm"
                        >
                          Chat

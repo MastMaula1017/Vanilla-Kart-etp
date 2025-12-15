@@ -50,7 +50,8 @@ const ChatPage = () => {
     // 1. Fetch Recipient & Messages
     const fetchData = async () => {
       try {
-        let res = await axios.get(`/experts/${userId}`).catch(() => ({ data: { name: 'User', _id: userId } }));
+        // Try fetching as generic user first (covers both customers and experts)
+        let res = await axios.get(`/auth/user/${userId}`).catch(() => ({ data: { name: 'User', _id: userId } }));
         setRecipient(res.data);
         const { data } = await axios.get(`/messages/${userId}`);
         setMessages(data);
