@@ -94,17 +94,28 @@ const ChatPage = () => {
   }, [userId, user._id]);
 
   // --- WebRTC Implementation (Native) ---
-  const configuration = { 
-    iceServers: [
-      { urls: 'stun:stun.l.google.com:19302' },
-      { urls: 'stun:global.stun.twilio.com:3478' },
-      { urls: 'stun:stun1.l.google.com:19302' },
-      { urls: 'stun:stun2.l.google.com:19302' }
-    ] 
-  };
+  const [iceServers, setIceServers] = useState([
+    { urls: 'stun:stun.l.google.com:19302' },
+    { urls: 'stun:global.stun.twilio.com:3478' }
+  ]);
+
+  useEffect(() => {
+    const fetchIceServers = async () => {
+      try {
+        const { data } = await axios.get('/turn/credentials');
+        if (data && Array.isArray(data)) {
+            console.log("✅ Using Metered.ca TURN Servers:", data);
+            setIceServers(data);
+        }
+      } catch (error) {
+        console.warn("Using default STUN servers (TURN fetch failed)");
+      }
+    };
+    fetchIceServers();
+  }, []);
 
   const initializePeerConnection = async () => {
-      const pc = new RTCPeerConnection(configuration);
+      const pc = new RTCPeerConnection({ iceServers });
       peerConnectionRef.current = pc;
 
       pc.onicecandidate = (event) => {
