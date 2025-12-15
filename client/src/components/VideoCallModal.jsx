@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Video, Mic, MicOff, VideoOff, PhoneOff, User } from 'lucide-react';
+import { Video, Mic, MicOff, VideoOff, PhoneOff, User, Phone } from 'lucide-react';
 
 const VideoCallModal = ({ 
   stream, 
@@ -7,7 +7,6 @@ const VideoCallModal = ({
   userVideo, 
   callAccepted, 
   callEnded, 
-  ended, 
   name, 
   leaveCall, 
   toggleMic, 
@@ -38,7 +37,9 @@ const VideoCallModal = ({
             {incomingCall && !callAccepted ? (
                 <div className="text-center">
                     <h2 className="text-2xl font-bold mb-2">{callerName} is calling...</h2>
-                    <p className="text-gray-400">Incoming Video Call</p>
+                    <p className="text-gray-400">
+                      {incomingCall.callType === 'audio' ? 'Incoming Voice Call' : 'Incoming Video Call'}
+                    </p>
                 </div>
             ) : (
                 <div className="text-center">
@@ -76,7 +77,7 @@ const VideoCallModal = ({
                     onClick={answerCall} 
                     className="p-4 bg-green-500 hover:bg-green-600 rounded-full text-white transition-colors animate-bounce"
                  >
-                    <Video size={24} />
+                    {incomingCall.callType === 'audio' ? <Phone /> : <Video size={24} />}
                  </button>
                  <button 
                     onClick={leaveCall} 
