@@ -5,7 +5,7 @@ const sendEmail = async (options) => {
 
   try {
     const { data, error } = await resend.emails.send({
-      from: process.env.EMAIL_FROM || 'onboarding@resend.dev',
+      from: process.env.EMAIL_FROM || 'support@mail.vanshraturi.me',
       to: options.email,
       subject: options.subject,
       text: options.message,

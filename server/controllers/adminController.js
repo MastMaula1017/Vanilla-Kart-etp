@@ -151,7 +151,7 @@ const replyToInquiry = async (req, res) => {
 
     try {
       await resend.emails.send({
-        from: 'ConsultPro <onboarding@resend.dev>', // Default testing sender for Resend
+        from: 'ConsultPro <support@mail.vanshraturi.me>', // Verified domain
         to: inquiry.email,
         subject: `Re: ${inquiry.subject} - Response from ConsultPro`,
         html: `<p>Hello <strong>${inquiry.name}</strong>,</p><p>${reply}</p><br/><p>Best regards,<br/>ConsultPro Team</p>`
