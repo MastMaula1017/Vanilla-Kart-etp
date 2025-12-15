@@ -179,7 +179,7 @@ const forgotPassword = async (req, res) => {
 
     // Create reset message
     // Create reset message
-    const clientUrl = process.env.CLIENT_URL || 'http://consultpro.vanshraturi.me';
+    const clientUrl = process.env.CLIENT_URL || 'https://consultpro.vanshraturi.me';
     const resetUrl = `${clientUrl}/reset-password`;
 
     const message = `Your password reset OTP is ${otp}`; // Fallback text
