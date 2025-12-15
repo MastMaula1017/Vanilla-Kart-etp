@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import { Send, CheckCircle, AlertCircle } from 'lucide-react';
 
-import SpotlightCard from './SpotlightCard';
-
 const ContactForm = () => {
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
   const [status, setStatus] = useState('idle'); // idle, submitting, success, error
@@ -42,10 +40,7 @@ const ContactForm = () => {
   };
 
   return (
-    <SpotlightCard 
-      className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 dark:bg-gray-900 dark:border-gray-800"
-      spotlightColor="rgba(168, 85, 247, 0.2)"
-    >
+    <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 dark:bg-gray-900 dark:border-gray-800">
       <h3 className="text-2xl font-bold text-gray-900 mb-2 dark:text-white">Still have questions?</h3>
       <p className="text-gray-600 mb-6 dark:text-gray-400">Drop us a message and we'll get back to you ASAP.</p>
       
@@ -113,7 +108,7 @@ const ContactForm = () => {
           )}
         </button>
       </form>
-    </SpotlightCard>
+    </div>
   );
 };
 

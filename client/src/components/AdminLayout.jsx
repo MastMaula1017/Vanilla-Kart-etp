@@ -10,7 +10,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 
 const AdminLayout = () => {
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -21,12 +21,17 @@ const AdminLayout = () => {
 
   const isActive = (path) => location.pathname === path;
 
-  const navItems = [
-    { name: 'Dashboard', path: '/admin', icon: LayoutDashboard },
-    { name: 'Users', path: '/admin/users', icon: Users },
-    { name: 'Experts', path: '/admin/experts', icon: Briefcase },
-    { name: 'Inquiries', path: '/admin/inquiries', icon: MessageSquare },
+  // Define allowed roles for each item
+  const allNavItems = [
+    { name: 'Dashboard', path: '/admin', icon: LayoutDashboard, roles: ['admin', 'inquiry_support'] },
+    { name: 'Users', path: '/admin/users', icon: Users, roles: ['admin'] },
+    { name: 'Experts', path: '/admin/experts', icon: Briefcase, roles: ['admin'] },
+    { name: 'Inquiries', path: '/admin/inquiries', icon: MessageSquare, roles: ['admin', 'inquiry_support'] },
   ];
+
+  const navItems = allNavItems.filter(item => 
+    user?.roles?.some(role => item.roles.includes(role))
+  );
 
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">

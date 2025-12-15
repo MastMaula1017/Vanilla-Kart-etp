@@ -14,15 +14,20 @@ const {
 
 // All routes are protected and require 'admin' role
 router.use(protect);
-router.use(authorize('admin'));
+// Protect all routes
+router.use(protect);
 
-router.get('/stats', getDashboardStats);
-router.get('/users', getAllUsers);
-router.get('/experts', getAllExperts);
-router.route('/users/:id').delete(deleteUser);
-router.put('/users/:id/roles', updateUserRoles);
-router.get('/inquiries', getAllInquiries);
-router.put('/inquiries/:id', updateInquiryStatus);
-router.post('/inquiries/:id/reply', replyToInquiry);
+// Dashboard & User Management (Admin Only)
+router.get('/stats', authorize('admin'), getDashboardStats);
+router.get('/users', authorize('admin'), getAllUsers);
+router.get('/experts', authorize('admin'), getAllExperts);
+router.route('/users/:id')
+    .delete(authorize('admin'), deleteUser);
+router.put('/users/:id/roles', authorize('admin'), updateUserRoles);
+
+// Inquiries (Admin & Inquiry Support)
+router.get('/inquiries', authorize('admin', 'inquiry_support'), getAllInquiries);
+router.put('/inquiries/:id', authorize('admin', 'inquiry_support'), updateInquiryStatus);
+router.post('/inquiries/:id/reply', authorize('admin', 'inquiry_support'), replyToInquiry);
 
 module.exports = router;

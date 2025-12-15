@@ -6,7 +6,7 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
   roles: { 
     type: [String], 
-    enum: ['customer', 'expert', 'admin'], 
+    enum: ['customer', 'expert', 'admin', 'inquiry_support'], 
     default: ['customer'] 
   },
   // Expert specific fields

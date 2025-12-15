@@ -1,7 +1,7 @@
 import { useState, useContext } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
-import { User, Mail, Lock, Briefcase, DollarSign, ArrowRight, UserCircle2 } from 'lucide-react';
+import { User, Mail, Lock, Briefcase, IndianRupee, ArrowRight, UserCircle2 } from 'lucide-react';
 
 const Register = () => {
   const { register } = useContext(AuthContext);
@@ -161,9 +161,9 @@ const Register = () => {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Hourly Rate ($)</label>
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Hourly Rate (₹)</label>
                   <div className="relative">
-                    <DollarSign className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                     <IndianRupee className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
                     <input
                       type="number"
                       name="hourlyRate"

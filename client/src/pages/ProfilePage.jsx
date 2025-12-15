@@ -1,7 +1,6 @@
 import { useState, useContext, useEffect } from 'react';
 import axios from '../utils/axios';
 import AuthContext from '../context/AuthContext';
-import SpotlightCard from '../components/SpotlightCard';
 import { User, Mail, Lock, Save, AlertCircle, CheckCircle } from 'lucide-react';
 
 const ProfilePage = () => {
@@ -130,7 +129,7 @@ const ProfilePage = () => {
                 </div>
             )}
 
-            <SpotlightCard spotlightColor="rgba(99, 102, 241, 0.15)" className="p-8">
+            <div className="bg-white dark:bg-gray-900 rounded-3xl border border-gray-200 dark:border-gray-800 shadow-sm p-8">
                 {activeTab === 'details' ? (
                     <form onSubmit={handleUpdateProfile} className="space-y-6">
                         <h2 className="text-xl font-bold mb-6 text-gray-900 dark:text-white">Edit Profile</h2>
@@ -253,7 +252,7 @@ const ProfilePage = () => {
                         </div>
                     </form>
                 )}
-            </SpotlightCard>
+            </div>
         </div>
       </div>
     </div>

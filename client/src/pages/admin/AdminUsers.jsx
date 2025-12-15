@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from '../../utils/axios';
-import { Trash2, User, Search, Shield, ShieldOff } from 'lucide-react';
+import { Trash2, User, Search, Shield, ShieldOff, Headset } from 'lucide-react';
 
 const AdminUsers = () => {
   const [users, setUsers] = useState([]);
@@ -50,6 +50,29 @@ const AdminUsers = () => {
             const { data } = await axios.put(`/admin/users/${user._id}/roles`, { roles: newRoles });
             setUsers(users.map(u => u._id === user._id ? { ...u, roles: data.roles } : u));
             alert(`User ${isAdmin ? 'removed from' : 'promoted to'} admin successfully.`);
+        } catch (error) {
+            console.error("Error updating roles:", error);
+            alert("Failed to update roles.");
+        }
+    }
+  };
+
+  const handleToggleSupport = async (user) => {
+    const isSupport = user.roles.includes('inquiry_support');
+    const action = isSupport ? 'Remove Support' : 'Make Support';
+    
+    if (window.confirm(`Are you sure you want to ${action.toLowerCase()} role for ${user.name}?`)) {
+        try {
+            let newRoles;
+            if (isSupport) {
+                newRoles = user.roles.filter(r => r !== 'inquiry_support');
+            } else {
+                newRoles = [...user.roles, 'inquiry_support'];
+            }
+            
+            const { data } = await axios.put(`/admin/users/${user._id}/roles`, { roles: newRoles });
+            setUsers(users.map(u => u._id === user._id ? { ...u, roles: data.roles } : u));
+            alert(`User ${isSupport ? 'removed from' : 'assigned to'} Inquiry Support successfully.`);
         } catch (error) {
             console.error("Error updating roles:", error);
             alert("Failed to update roles.");
@@ -113,6 +136,8 @@ const AdminUsers = () => {
                                 ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300'
                                 : role === 'expert'
                                 ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+                                : role === 'inquiry_support'
+                                ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300'
                                 : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
                             }`}>
                                 {role}
@@ -134,6 +159,17 @@ const AdminUsers = () => {
                         title={user.roles?.includes('admin') ? "Remove Admin" : "Make Admin"}
                     >
                         {user.roles?.includes('admin') ? <Shield size={18} /> : <ShieldOff size={18} />}
+                    </button>
+                    <button 
+                        onClick={() => handleToggleSupport(user)}
+                        className={`p-2 rounded-lg transition-colors ${
+                            user.roles?.includes('inquiry_support')
+                            ? 'text-orange-600 hover:bg-orange-50 dark:text-orange-400 dark:hover:bg-orange-900/20'
+                            : 'text-gray-400 hover:text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20'
+                        }`}
+                        title={user.roles?.includes('inquiry_support') ? "Remove Inquiry Support" : "Make Inquiry Support"}
+                    >
+                        <Headset size={18} />
                     </button>
                     <button 
                         onClick={() => handleDelete(user._id)}

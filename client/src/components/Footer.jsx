@@ -16,10 +16,10 @@ const Footer = () => {
               <a href="#" className="text-gray-400 hover:text-primary transition-colors">
                 <Twitter size={20} />
               </a>
-              <a href="#" className="text-gray-400 hover:text-primary transition-colors">
+              <a href="https://www.linkedin.com/in/003va/" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-primary transition-colors">
                 <Linkedin size={20} />
               </a>
-              <a href="#" className="text-gray-400 hover:text-primary transition-colors">
+              <a href="https://github.com/MastMaula1017" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-primary transition-colors">
                 <Github size={20} />
               </a>
               <a href="#" className="text-gray-400 hover:text-primary transition-colors">
@@ -33,9 +33,9 @@ const Footer = () => {
             <h4 className="font-bold text-gray-900 mb-6 dark:text-white">Platform</h4>
             <ul className="space-y-4 text-sm text-gray-500 dark:text-gray-400">
               <li><Link to="/experts" className="hover:text-primary transition-colors">Browse Experts</Link></li>
-              <li><Link to="/how-it-works" className="hover:text-primary transition-colors">How it Works</Link></li>
+              <li><Link to="/get-the-app" className="hover:text-primary transition-colors">Get the app</Link></li>
               <li><Link to="/pricing" className="hover:text-primary transition-colors">Pricing</Link></li>
-              <li><Link to="/register?role=expert" className="hover:text-primary transition-colors">Become an Advisor</Link></li>
+              <li><Link to="/become-expert" className="hover:text-primary transition-colors">Become an Advisor</Link></li>
             </ul>
           </div>
 
@@ -56,7 +56,7 @@ const Footer = () => {
             <ul className="space-y-4 text-sm text-gray-500 dark:text-gray-400">
               <li><Link to="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link></li>
               <li><Link to="/terms" className="hover:text-primary transition-colors">Terms of Service</Link></li>
-              <li><Link to="/cookies" className="hover:text-primary transition-colors">Cookie Policy</Link></li>
+              <li><Link to="/cookie-policy" className="hover:text-primary transition-colors">Cookie Policy</Link></li>
             </ul>
           </div>
         </div>

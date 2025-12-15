@@ -34,6 +34,8 @@ const Navbar = () => {
           <Link to="/" className="text-2xl font-bold text-primary">ConsultPro</Link>
           <div className="flex items-center space-x-4">
             <Link to="/experts" className="hidden md:block text-gray-600 hover:text-primary dark:text-gray-300 dark:hover:text-white">Find Experts</Link>
+            <Link to="/pricing" className="hidden md:block text-gray-600 hover:text-primary dark:text-gray-300 dark:hover:text-white">Plans & Pricing</Link>
+            <Link to="/about" className="hidden md:block text-gray-600 hover:text-primary dark:text-gray-300 dark:hover:text-white">About Us</Link>
             <ThemeToggle />
             {user ? (
               <div className="relative" ref={menuRef}>
@@ -61,13 +63,13 @@ const Navbar = () => {
                     >
                         Dashboard
                     </Link>
-                    {user.roles?.includes('admin') && (
+                    {(user.roles?.includes('admin') || user.roles?.includes('inquiry_support')) && (
                       <Link 
                           to="/admin" 
                           className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
                           onClick={() => setIsMenuOpen(false)}
                       >
-                          Admin Panel
+                          {user.roles.includes('admin') ? 'Admin Panel' : 'Inquiries Panel'}
                       </Link>
                     )}
                     <Link 
