@@ -18,29 +18,14 @@ const path = require('path');
 
 // Middleware
 app.use(cors({
-  origin: ["https://joyful-gaufre-719afc.netlify.app", "http://localhost:5173", "http://localhost:5175"],
+  origin: ["https://joyful-gaufre-719afc.netlify.app", "http://localhost:5173", "http://localhost:5175", "http://consultpro.vanshraturi.me", "https://consultpro.vanshraturi.me"],
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 }));
-app.use(express.json());
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Routes Placeholders
-app.use('/api/auth', require('./routes/authRoutes'));
-app.use('/api/experts', require('./routes/expertRoutes'));
-app.use('/api/appointments', require('./routes/appointmentRoutes'));
-app.use('/api/reviews', require('./routes/reviewRoutes'));
-app.use('/api/messages', require('./routes/messageRoutes'));
-app.use('/api/upload', require('./routes/uploadRoutes'));
-app.use('/api/questions', require('./routes/questionRoutes'));
-app.use('/api/questions', require('./routes/questionRoutes'));
-app.use('/api/admin', require('./routes/adminRoutes'));
-app.use('/api/turn', require('./routes/turnRoutes'));
-
-// Socket.io Setup
 const io = new Server(server, {
   cors: {
-    origin: ["https://joyful-gaufre-719afc.netlify.app" ,"http://localhost:5173", "http://localhost:5175"],
+    origin: ["https://joyful-gaufre-719afc.netlify.app", "http://localhost:5173", "http://localhost:5175", "http://consultpro.vanshraturi.me", "https://consultpro.vanshraturi.me"],
     methods: ["GET", "POST"],
     credentials: true
   }
