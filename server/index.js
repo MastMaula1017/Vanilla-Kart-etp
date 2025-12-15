@@ -76,7 +76,8 @@ io.on('connection', (socket) => {
     io.to(data.userToCall).emit('callUser', { 
       signal: data.signalData, 
       from: data.from, 
-      name: data.name 
+      name: data.name,
+      callType: data.callType // Pass the callType (video/audio)
     });
   });
 
