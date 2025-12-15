@@ -26,6 +26,13 @@ const VideoCallModal = ({
     }
   }, [remoteStream, userVideo, callAccepted]);
 
+  // Ensure LOCAL stream is attached when modal mounts
+  useEffect(() => {
+    if (myVideo.current && stream) {
+        myVideo.current.srcObject = stream;
+    }
+  }, [stream, myVideo]);
+
   return (
     <div className="fixed inset-0 z-[100] bg-black/90 flex flex-col items-center justify-center p-4">
       <div className="relative w-full max-w-5xl aspect-video bg-zinc-900 rounded-2xl overflow-hidden shadow-2xl border border-zinc-800">

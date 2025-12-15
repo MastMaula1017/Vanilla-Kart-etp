@@ -40,6 +40,7 @@ const ChatPage = () => {
   const myVideo = useRef();
   const userVideo = useRef();
   const peerConnectionRef = useRef();
+  const iceCandidatesQueue = useRef([]);
 
 
   useEffect(() => {
@@ -80,6 +81,10 @@ const ChatPage = () => {
         setCallAccepted(true);
         if (peerConnectionRef.current) {
             await peerConnectionRef.current.setRemoteDescription(new RTCSessionDescription(signal));
+            // Process any queued candidates now that remote description is set
+            if (peerConnectionRef.current.processQueue) {
+                await peerConnectionRef.current.processQueue();
+            }
         }
     });
 
@@ -121,7 +126,11 @@ const ChatPage = () => {
   // ... useEffects ...
 
   const initializePeerConnection = async () => {
-      const pc = new RTCPeerConnection({ iceServers });
+      const pc = new RTCPeerConnection({ 
+          iceServers,
+          bundlePolicy: 'max-bundle', // Multiplex track on single port (firewall friendly)
+          rtcpMuxPolicy: 'require'
+      });
       peerConnectionRef.current = pc;
 
       pc.onicecandidate = (event) => {
@@ -138,14 +147,40 @@ const ChatPage = () => {
           setRemoteStream(event.streams[0]);
       };
 
+      pc.onconnectionstatechange = () => {
+          console.log("🚀 Connection State:", pc.connectionState);
+      };
+      
+      pc.oniceconnectionstatechange = () => {
+          console.log("🧊 ICE Connection State:", pc.iceConnectionState);
+      };
+
       // Handle ICE candidates from remote
-      socketRef.current.on('iceCandidate', async (candidate) => {
+      const handleBeforeIce = async (candidate) => {
           try {
-              if (pc.signalingState !== 'closed') {
+              if (pc.signalingState !== 'closed' && pc.remoteDescription) {
                    await pc.addIceCandidate(new RTCIceCandidate(candidate));
+              } else if (!pc.remoteDescription && candidate) {
+                   console.log("🧊 Queuing ICE candidate (waiting for remote description)");
+                   iceCandidatesQueue.current.push(candidate);
               }
           } catch(e) { console.error("Error adding ice candidate", e); }
-      });
+      };
+      
+      // Allow processing of queued candidates
+      peerConnectionRef.current.processQueue = async () => {
+          while (iceCandidatesQueue.current.length > 0) {
+              const candidate = iceCandidatesQueue.current.shift();
+              try {
+                  console.log("🧊 Processing queued ICE candidate");
+                  await pc.addIceCandidate(new RTCIceCandidate(candidate));
+              } catch (e) { console.error("Error processing queued candidate", e); }
+          }
+      };
+
+      // Remove any existing listener to avoid duplicates
+      socketRef.current.off('iceCandidate');
+      socketRef.current.on('iceCandidate', handleBeforeIce);
 
       return pc;
   };
@@ -209,6 +244,12 @@ const ChatPage = () => {
       localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
 
       await pc.setRemoteDescription(new RTCSessionDescription(incomingCall.signal));
+      
+      // Process queued candidates
+      if (pc.processQueue) {
+          await pc.processQueue();
+      }
+
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
 
