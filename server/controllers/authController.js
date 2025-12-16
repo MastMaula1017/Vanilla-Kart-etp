@@ -275,9 +275,12 @@ const resetPassword = async (req, res) => {
 // @desc    Get user by ID (Public/Protected - limited info)
 // @route   GET /api/auth/user/:id
 // @access  Protected
+// @desc    Get user by ID (Public/Protected - limited info)
+// @route   GET /api/auth/user/:id
+// @access  Protected
 const getUserById = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id).select('name email roles expertProfile');
+    const user = await User.findById(req.params.id).select('name email roles expertProfile profileImage');
     
     if (user) {
       res.json(user);
@@ -285,8 +288,82 @@ const getUserById = async (req, res) => {
       res.status(404).json({ message: 'User not found' });
     }
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'Server Error' });
   }
 };
 
-module.exports = { registerUser, loginUser, updateUserProfile, changePassword, forgotPassword, resetPassword, getUserById };
+// @desc    Upload profile photo
+// @route   POST /api/auth/profile/image
+// @access  Protected
+const uploadProfilePhoto = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    const user = await User.findById(req.user._id);
+    if (user) {
+      user.profileImage = req.file.path;
+      const updatedUser = await user.save();
+      
+      res.json({
+        _id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        roles: updatedUser.roles,
+        expertProfile: updatedUser.expertProfile,
+        profileImage: updatedUser.profileImage,
+        coverImage: updatedUser.coverImage,
+        token: generateToken(updatedUser._id),
+      });
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
+
+// @desc    Upload cover photo
+// @route   POST /api/auth/profile/cover
+// @access  Protected
+const uploadCoverPhoto = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    const user = await User.findById(req.user._id);
+    if (user) {
+      user.coverImage = req.file.path;
+      const updatedUser = await user.save();
+      
+      res.json({
+        _id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        roles: updatedUser.roles,
+        expertProfile: updatedUser.expertProfile,
+        profileImage: updatedUser.profileImage,
+        coverImage: updatedUser.coverImage,
+        token: generateToken(updatedUser._id),
+      });
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
+
+module.exports = {
+  registerUser,
+  loginUser,
+  updateUserProfile,
+  changePassword,
+  forgotPassword,
+  resetPassword,
+  getUserById,
+  uploadProfilePhoto,
+  uploadCoverPhoto
+};

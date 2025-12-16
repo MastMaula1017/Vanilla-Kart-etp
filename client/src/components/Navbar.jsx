@@ -43,8 +43,12 @@ const Navbar = () => {
                   onClick={() => setIsMenuOpen(!isMenuOpen)}
                   className="flex items-center space-x-2 text-gray-700 dark:text-gray-200 hover:text-primary transition-colors focus:outline-none"
                 >
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
-                        {user.name[0]}
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm overflow-hidden border border-gray-200 dark:border-gray-700">
+                        {user.profileImage ? (
+                            <img src={user.profileImage} alt={user.name} className="w-full h-full object-cover" />
+                        ) : (
+                            user.name[0]
+                        )}
                     </div>
                     <span className="hidden md:block font-medium">{user.name}</span>
                     <ChevronDown size={16} className={`hidden md:block transition-transform ${isMenuOpen ? 'rotate-180' : ''}`} />

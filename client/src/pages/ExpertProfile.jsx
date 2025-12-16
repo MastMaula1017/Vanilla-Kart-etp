@@ -117,7 +117,14 @@ const ExpertProfile = () => {
     <div className="min-h-screen pb-12">
       {/* Premium Header with Noise Texture */}
       <div className="relative h-64 w-full overflow-hidden bg-[#0A0A0A]">
-         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-indigo-900/40 via-[#0A0A0A] to-[#0A0A0A]"></div>
+         {expert.coverImage ? (
+            <div className="absolute inset-0">
+                <img src={expert.coverImage} alt="Cover" className="w-full h-full object-cover opacity-60" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/40 to-transparent"></div>
+            </div>
+         ) : (
+             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-indigo-900/40 via-[#0A0A0A] to-[#0A0A0A]"></div>
+         )}
          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"></div>
          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-transparent to-[#0A0A0A]/90"></div>
          
@@ -137,8 +144,14 @@ const ExpertProfile = () => {
                 <SpotlightCard className="p-8 mb-8" spotlightColor="rgba(255, 255, 255, 0.1)">
                     <div className="flex flex-col md:flex-row items-start md:items-end gap-6">
                         <div className="w-32 h-32 rounded-3xl bg-zinc-800 border-4 border-[#0A0A0A] shadow-2xl flex items-center justify-center text-5xl font-bold text-white relative overflow-hidden">
-                             <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 to-purple-600 opacity-20"></div>
-                             {expert.name[0]}
+                             {expert.profileImage ? (
+                                <img src={expert.profileImage} alt={expert.name} className="w-full h-full object-cover" />
+                             ) : (
+                                <>
+                                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 to-purple-600 opacity-20"></div>
+                                    {expert.name[0]}
+                                </>
+                             )}
                         </div>
                         <div className="flex-1 mb-2">
                              <div className="flex items-center space-x-3 mb-2">
@@ -237,7 +250,7 @@ const ExpertProfile = () => {
             {/* Right Column: Booking Card */}
             <div className="lg:w-96">
                 <div className="sticky top-8">
-                    <SpotlightCard className="p-6 md:p-8" spotlightColor="rgba(168, 85, 247, 0.2)">
+                    <div className="bg-white dark:bg-zinc-900/80 backdrop-blur-xl p-6 md:p-8 rounded-3xl border border-gray-100 dark:border-white/10 shadow-2xl">
                         <div className="flex items-baseline justify-between mb-8 pb-6 border-b border-gray-100 dark:border-white/10">
                             <div>
                                 <span className="text-gray-500 dark:text-gray-400 text-sm font-medium uppercase tracking-wider">Hourly Rate</span>
@@ -250,13 +263,13 @@ const ExpertProfile = () => {
 
                         <form onSubmit={handleBook} className="space-y-5">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select Date</label>
-                                <div className="relative">
-                                    <Calendar className="absolute left-3 top-3 text-gray-400" size={18} />
+                                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">Select Date</label>
+                                <div className="relative group">
+                                    <Calendar className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-indigo-500 transition-colors pointer-events-none" size={18} />
                                     <input 
                                        type="date"
                                        required
-                                       className="w-full bg-gray-50 dark:bg-zinc-900/50 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-2.5 pl-10 outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white transition-all"
+                                       className="w-full bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl px-4 py-3 pl-11 outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:text-white transition-all text-sm font-medium [color-scheme:light] dark:[color-scheme:dark]"
                                        value={date}
                                        min={new Date().toISOString().split('T')[0]}
                                        onChange={(e) => setDate(e.target.value)}
@@ -266,26 +279,26 @@ const ExpertProfile = () => {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Start</label>
-                                    <div className="relative">
-                                        <Clock className="absolute left-3 top-3 text-gray-400" size={18} />
+                                    <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">Start</label>
+                                    <div className="relative group">
+                                        <Clock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-indigo-500 transition-colors pointer-events-none" size={18} />
                                         <input 
                                            type="time"
                                            required
-                                           className="w-full bg-gray-50 dark:bg-zinc-900/50 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-2.5 pl-10 outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white transition-all"
+                                           className="w-full bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl px-4 py-3 pl-11 outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:text-white transition-all text-sm font-medium [color-scheme:light] dark:[color-scheme:dark]"
                                            value={startTime}
                                            onChange={(e) => setStartTime(e.target.value)}
                                         />
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">End</label>
-                                    <div className="relative">
-                                        <Clock className="absolute left-3 top-3 text-gray-400" size={18} />
+                                    <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">End</label>
+                                    <div className="relative group">
+                                        <Clock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-indigo-500 transition-colors pointer-events-none" size={18} />
                                         <input 
                                            type="time"
                                            required
-                                           className="w-full bg-gray-50 dark:bg-zinc-900/50 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-2.5 pl-10 outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white transition-all"
+                                           className="w-full bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl px-4 py-3 pl-11 outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:text-white transition-all text-sm font-medium [color-scheme:light] dark:[color-scheme:dark]"
                                            value={endTime}
                                            onChange={(e) => setEndTime(e.target.value)}
                                         />
@@ -294,10 +307,10 @@ const ExpertProfile = () => {
                             </div>
                             
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Message</label>
+                                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">Message</label>
                                 <textarea
-                                   className="w-full bg-gray-50 dark:bg-zinc-900/50 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white transition-all resize-none min-h-[100px]"
-                                   placeholder="What would you like to discuss?"
+                                   className="w-full bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:text-white transition-all resize-none min-h-[100px] text-sm font-medium placeholder-gray-400"
+                                   placeholder="Briefly describe what you'd like to discuss..."
                                    value={notes}
                                    onChange={(e) => setNotes(e.target.value)}
                                 ></textarea>
@@ -309,7 +322,7 @@ const ExpertProfile = () => {
                                 </span>
                             </button>
                         </form>
-                    </SpotlightCard>
+                    </div>
                 </div>
             </div>
         </div>

@@ -415,16 +415,16 @@ const ChatPage = () => {
                                     
                                     {msg.messageType === 'file' && (
                                         <div className="flex flex-col gap-2">
-                                            {msg.fileUrl?.match(/\.(jpg|jpeg|png|gif)$/i) ? (
+                                            {msg.fileUrl?.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
                                                 <img 
-                                                    src={`${BASE_URL}${msg.fileUrl}`} 
+                                                    src={msg.fileUrl.startsWith('http') ? msg.fileUrl : `${BASE_URL}${msg.fileUrl}`} 
                                                     alt="attachment" 
                                                     className="rounded-lg max-h-60 object-cover cursor-pointer hover:opacity-90 transition-opacity"
-                                                    onClick={() => window.open(`${BASE_URL}${msg.fileUrl}`, '_blank')}
+                                                    onClick={() => window.open(msg.fileUrl.startsWith('http') ? msg.fileUrl : `${BASE_URL}${msg.fileUrl}`, '_blank')}
                                                 />
                                             ) : (
                                                 <a 
-                                                    href={`${BASE_URL}${msg.fileUrl}`} 
+                                                    href={msg.fileUrl.startsWith('http') ? msg.fileUrl : `${BASE_URL}${msg.fileUrl}`} 
                                                     target="_blank" 
                                                     rel="noreferrer"
                                                     className="flex items-center gap-3 p-3 bg-white/10 rounded-lg hover:bg-white/20 transition-colors"
