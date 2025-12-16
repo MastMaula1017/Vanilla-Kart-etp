@@ -27,12 +27,12 @@ const getDashboardStats = async (req, res) => {
   }
 };
 
-// @desc    Get All Users (Customers)
+// @desc    Get All Users (Everyone)
 // @route   GET /api/admin/users
 // @access  Private/Admin
 const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find({ roles: 'customer' }).select('-password');
+    const users = await User.find({}).select('-password');
     res.json(users);
   } catch (error) {
     res.status(500).json({ message: error.message });
