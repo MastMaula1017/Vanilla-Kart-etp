@@ -14,7 +14,7 @@ const Pricing = () => {
             period: "per month",
             billing: "Billed monthly or annually. Cancel anytime.",
             buttonText: "Start subscription",
-            buttonLink: "/register?plan=personal",
+            buttonLink: "#",
             features: [
                 "Access to verified experts",
                 "2 sessions per month",
@@ -33,7 +33,7 @@ const Pricing = () => {
             period: "per user / month",
             billing: "Billed annually. Cancel anytime.",
             buttonText: "Start subscription",
-            buttonLink: "/register?plan=team",
+            buttonLink: "#",
             features: [
                 "Access to top-tier consultants",
                 "5 sessions per user / month",

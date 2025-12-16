@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const Question = require('../models/Question');
-// const Appointment = require('../models/Appointment'); // Assuming you have this or will have it
+const { Resend } = require('resend');
+const Appointment = require('../models/Appointment'); 
 
 // @desc    Get Admin Dashboard Stats
 // @route   GET /api/admin/stats
@@ -13,8 +14,7 @@ const getDashboardStats = async (req, res) => {
     const pendingInquiries = await Question.countDocuments({ status: 'pending' });
     
     // Once you have Appointment model
-    // const totalAppointments = await Appointment.countDocuments();
-    const totalAppointments = 0; // Placeholder
+    const totalAppointments = await Appointment.countDocuments();
 
     res.json({
       users: totalUsers,
@@ -22,8 +22,7 @@ const getDashboardStats = async (req, res) => {
       inquiries: totalInquiries,
       pendingInquiries,
       appointments: totalAppointments
-    });
-  } catch (error) {
+    });  } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
@@ -57,10 +56,30 @@ const getAllExperts = async (req, res) => {
 // @access  Private/Admin
 const updateUserRoles = async (req, res) => {
   const { roles } = req.body; // Expect array of roles
+  
+  // Check if requester is a moderator
+  const isModerator = req.user.roles.includes('moderator') && !req.user.roles.includes('admin');
+
   try {
     const user = await User.findById(req.params.id);
 
     if (user) {
+      if (isModerator) {
+         // Moderators can ONLY assign 'inquiry_support' and 'customer' (default)
+         // They cannot assign 'admin' or 'moderator'
+         // They cannot Modify an Admin or Moderator
+         
+         const targetIsAdminOrMod = user.roles.includes('admin') || user.roles.includes('moderator');
+         if (targetIsAdminOrMod) {
+             return res.status(403).json({ message: 'Moderators cannot modify Admins or Moderators' });
+         }
+
+         const illegalRoles = roles.filter(r => r === 'admin' || r === 'moderator');
+         if (illegalRoles.length > 0) {
+             return res.status(403).json({ message: 'Moderators can only assign inquiry_support role' });
+         }
+      }
+
       user.roles = roles;
       const updatedUser = await user.save();
       res.json({
@@ -146,22 +165,92 @@ const replyToInquiry = async (req, res) => {
     await inquiry.save();
 
     // Send Email via Resend
-    const { Resend } = require('resend');
     const resend = new Resend(process.env.RESEND_API_KEY);
 
     try {
-      await resend.emails.send({
+      const { data, error } = await resend.emails.send({
         from: 'ConsultPro <support@mail.vanshraturi.me>', // Verified domain
         to: inquiry.email,
-        subject: `Re: ${inquiry.subject} - Response from ConsultPro`,
+        subject: `Re: ${inquiry.subject || 'Inquiry'} - Response from ConsultPro`,
         html: `<p>Hello <strong>${inquiry.name}</strong>,</p><p>${reply}</p><br/><p>Best regards,<br/>ConsultPro Team</p>`
       });
-      console.log(`Email sent to ${inquiry.email} via Resend`);
+
+      if (error) {
+        console.error("Resend API Error:", error);
+        return res.status(400).json({ message: 'Email sending failed', error });
+      }
+
+      console.log(`Email sent to ${inquiry.email} via Resend. ID: ${data?.id}`);
     } catch (emailError) {
-      console.error("Resend email failed:", emailError);
+      console.error("Resend execution failed:", emailError);
+      return res.status(500).json({ message: 'Email execution failed', error: emailError.message });
     }
 
     res.json(inquiry);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
+// @desc    Get Monthly Activity Stats
+// @route   GET /api/admin/stats/monthly
+// @access  Private/Admin
+const getMonthlyStats = async (req, res) => {
+  try {
+    const year = new Date().getFullYear();
+    
+    const userStats = await User.aggregate([
+      {
+        $match: {
+          createdAt: {
+            $gte: new Date(`${year}-01-01`),
+            $lte: new Date(`${year}-12-31`)
+          }
+        }
+      },
+      {
+        $group: {
+          _id: { $month: "$createdAt" },
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const appointmentStats = await Appointment.aggregate([
+      {
+        $match: {
+          createdAt: {
+            $gte: new Date(`${year}-01-01`),
+            $lte: new Date(`${year}-12-31`)
+          }
+        }
+      },
+      {
+        $group: {
+          _id: { $month: "$createdAt" },
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const months = [
+      "Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+    ];
+
+    const data = months.map((month, index) => {
+      const userMonth = userStats.find(item => item._id === index + 1);
+      const appointmentMonth = appointmentStats.find(item => item._id === index + 1);
+      
+      return {
+        name: month,
+        users: userMonth ? userMonth.count : 0,
+        appointments: appointmentMonth ? appointmentMonth.count : 0
+      };
+    });
+
+    res.json(data);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -175,6 +264,7 @@ module.exports = {
   getAllInquiries,
   updateInquiryStatus,
   replyToInquiry,
-  updateUserRoles
+  updateUserRoles,
+  getMonthlyStats
 };
 

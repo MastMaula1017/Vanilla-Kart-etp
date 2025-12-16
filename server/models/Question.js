@@ -18,6 +18,10 @@ const questionSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please add a message']
   },
+  subject: {
+    type: String,
+    default: 'General Inquiry'
+  },
   status: {
     type: String,
     enum: ['pending', 'reviewed', 'replied'],

@@ -9,7 +9,8 @@ const {
   getAllInquiries,
   updateInquiryStatus,
   replyToInquiry,
-  updateUserRoles
+  updateUserRoles,
+  getMonthlyStats
 } = require('../controllers/adminController');
 
 // All routes are protected and require 'admin' role
@@ -18,16 +19,18 @@ router.use(protect);
 router.use(protect);
 
 // Dashboard & User Management (Admin Only)
-router.get('/stats', authorize('admin'), getDashboardStats);
-router.get('/users', authorize('admin'), getAllUsers);
-router.get('/experts', authorize('admin'), getAllExperts);
+// Dashboard & User Management (Admin Only)
+router.get('/stats', authorize('admin', 'moderator'), getDashboardStats);
+router.get('/stats/monthly', authorize('admin', 'moderator'), getMonthlyStats); 
+router.get('/users', authorize('admin', 'moderator'), getAllUsers);
+router.get('/experts', authorize('admin', 'moderator'), getAllExperts);
 router.route('/users/:id')
     .delete(authorize('admin'), deleteUser);
-router.put('/users/:id/roles', authorize('admin'), updateUserRoles);
+router.put('/users/:id/roles', authorize('admin', 'moderator'), updateUserRoles);
 
-// Inquiries (Admin & Inquiry Support)
-router.get('/inquiries', authorize('admin', 'inquiry_support'), getAllInquiries);
-router.put('/inquiries/:id', authorize('admin', 'inquiry_support'), updateInquiryStatus);
-router.post('/inquiries/:id/reply', authorize('admin', 'inquiry_support'), replyToInquiry);
+// Inquiries (Admin, Inquiry Support & Moderator)
+router.get('/inquiries', authorize('admin', 'inquiry_support', 'moderator'), getAllInquiries);
+router.put('/inquiries/:id', authorize('admin', 'inquiry_support', 'moderator'), updateInquiryStatus);
+router.post('/inquiries/:id/reply', authorize('admin', 'inquiry_support', 'moderator'), replyToInquiry);
 
 module.exports = router;

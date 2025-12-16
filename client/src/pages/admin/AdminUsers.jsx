@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import axios from '../../utils/axios';
-import { Trash2, User, Search, Shield, ShieldOff, Headset } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';import { Trash2, User, Search, Shield, ShieldOff, Headset } from 'lucide-react';
 
 const AdminUsers = () => {
+  const { user: currentUser } = useAuth();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -50,6 +51,29 @@ const AdminUsers = () => {
             const { data } = await axios.put(`/admin/users/${user._id}/roles`, { roles: newRoles });
             setUsers(users.map(u => u._id === user._id ? { ...u, roles: data.roles } : u));
             alert(`User ${isAdmin ? 'removed from' : 'promoted to'} admin successfully.`);
+        } catch (error) {
+            console.error("Error updating roles:", error);
+            alert("Failed to update roles.");
+        }
+    }
+  };
+
+  const handleToggleModerator = async (user) => {
+    const isModerator = user.roles.includes('moderator');
+    const action = isModerator ? 'Remove Moderator' : 'Make Moderator';
+    
+    if (window.confirm(`Are you sure you want to ${action.toLowerCase()} role for ${user.name}?`)) {
+        try {
+            let newRoles;
+            if (isModerator) {
+                newRoles = user.roles.filter(r => r !== 'moderator');
+            } else {
+                newRoles = [...user.roles, 'moderator'];
+            }
+            
+            const { data } = await axios.put(`/admin/users/${user._id}/roles`, { roles: newRoles });
+            setUsers(users.map(u => u._id === user._id ? { ...u, roles: data.roles } : u));
+            alert(`User ${isModerator ? 'removed from' : 'promoted to'} moderator successfully.`);
         } catch (error) {
             console.error("Error updating roles:", error);
             alert("Failed to update roles.");
@@ -136,6 +160,8 @@ const AdminUsers = () => {
                                 ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300'
                                 : role === 'expert'
                                 ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+                                : role === 'moderator'
+                                ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300'
                                 : role === 'inquiry_support'
                                 ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300'
                                 : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
@@ -149,35 +175,62 @@ const AdminUsers = () => {
                     {new Date(user.createdAt).toLocaleDateString()}
                   </td>
                   <td className="p-4 text-right space-x-2">
-                    <button 
-                        onClick={() => handleToggleAdmin(user)}
-                        className={`p-2 rounded-lg transition-colors ${
-                            user.roles?.includes('admin')
-                            ? 'text-purple-600 hover:bg-purple-50 dark:text-purple-400 dark:hover:bg-purple-900/20'
-                            : 'text-gray-400 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20'
-                        }`}
-                        title={user.roles?.includes('admin') ? "Remove Admin" : "Make Admin"}
-                    >
-                        {user.roles?.includes('admin') ? <Shield size={18} /> : <ShieldOff size={18} />}
-                    </button>
-                    <button 
-                        onClick={() => handleToggleSupport(user)}
-                        className={`p-2 rounded-lg transition-colors ${
-                            user.roles?.includes('inquiry_support')
-                            ? 'text-orange-600 hover:bg-orange-50 dark:text-orange-400 dark:hover:bg-orange-900/20'
-                            : 'text-gray-400 hover:text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20'
-                        }`}
-                        title={user.roles?.includes('inquiry_support') ? "Remove Inquiry Support" : "Make Inquiry Support"}
-                    >
-                        <Headset size={18} />
-                    </button>
-                    <button 
-                        onClick={() => handleDelete(user._id)}
-                        className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                        title="Delete User"
-                    >
-                        <Trash2 size={18} />
-                    </button>
+                    {/* Only Admins can promote/demote other Admins and Moderators */}
+                    {currentUser?.roles?.includes('admin') && (
+                        <>
+                            <button 
+                                onClick={() => handleToggleAdmin(user)}
+                                className={`p-2 rounded-lg transition-colors ${
+                                    user.roles?.includes('admin')
+                                    ? 'text-purple-600 hover:bg-purple-50 dark:text-purple-400 dark:hover:bg-purple-900/20'
+                                    : 'text-gray-400 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20'
+                                }`}
+                                title={user.roles?.includes('admin') ? "Remove Admin" : "Make Admin"}
+                            >
+                                {user.roles?.includes('admin') ? <Shield size={18} /> : <ShieldOff size={18} />}
+                            </button>
+                            
+                            <button 
+                                onClick={() => handleToggleModerator(user)}
+                                className={`p-2 rounded-lg transition-colors ${
+                                    user.roles?.includes('moderator')
+                                    ? 'text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-900/20'
+                                    : 'text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20'
+                                }`}
+                                title={user.roles?.includes('moderator') ? "Remove Moderator" : "Make Moderator"}
+                            >
+                                <User size={18} className={user.roles?.includes('moderator') ? "fill-current" : ""} />
+                            </button>
+                        </>
+                    )}
+
+                    {/* Admins and Moderators can assign Inquiry Support */}
+                    {/* But Moderators cannot modify Admins/Moderators */}
+                    {((currentUser?.roles?.includes('admin')) || 
+                      (currentUser?.roles?.includes('moderator') && !user.roles.includes('admin') && !user.roles.includes('moderator'))) && (
+                        <button 
+                            onClick={() => handleToggleSupport(user)}
+                            className={`p-2 rounded-lg transition-colors ${
+                                user.roles?.includes('inquiry_support')
+                                ? 'text-orange-600 hover:bg-orange-50 dark:text-orange-400 dark:hover:bg-orange-900/20'
+                                : 'text-gray-400 hover:text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20'
+                            }`}
+                            title={user.roles?.includes('inquiry_support') ? "Remove Inquiry Support" : "Make Inquiry Support"}
+                        >
+                            <Headset size={18} />
+                        </button>
+                    )}
+
+                    {/* Only Admins can delete users */}
+                    {currentUser?.roles?.includes('admin') && (
+                        <button 
+                            onClick={() => handleDelete(user._id)}
+                            className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                            title="Delete User"
+                        >
+                            <Trash2 size={18} />
+                        </button>
+                    )}
                   </td>
                 </tr>
               ))}

@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import axios from '../../utils/axios';
-import { Trash2, Briefcase, Search, Star } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';import { Trash2, Briefcase, Search, Star } from 'lucide-react';
 
 const AdminExperts = () => {
+  const { user: currentUser } = useAuth();
   const [experts, setExperts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -107,13 +108,15 @@ const AdminExperts = () => {
                     </div>
                   </td>
                   <td className="p-4 text-right">
-                    <button 
-                        onClick={() => handleDelete(expert._id)}
-                        className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                        title="Delete Expert"
-                    >
-                        <Trash2 size={18} />
-                    </button>
+                    {currentUser?.roles?.includes('admin') && (
+                        <button 
+                            onClick={() => handleDelete(expert._id)}
+                            className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                            title="Delete Expert"
+                        >
+                            <Trash2 size={18} />
+                        </button>
+                    )}
                   </td>
                 </tr>
               ))}

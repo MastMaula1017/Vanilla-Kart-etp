@@ -81,7 +81,7 @@ function App() {
 
           {/* Admin Routes */}
           <Route path="/admin" element={
-            <ProtectedRoute allowedRoles={['admin', 'inquiry_support']}>
+            <ProtectedRoute allowedRoles={['admin', 'inquiry_support', 'moderator']}>
               <AdminLayout />
             </ProtectedRoute>
           }>
@@ -93,12 +93,12 @@ function App() {
 
             {/* User Management - Admin Only */}
             <Route path="users" element={
-              <ProtectedRoute allowedRoles={['admin']}>
+              <ProtectedRoute allowedRoles={['admin', 'moderator']}>
                 <AdminUsers />
               </ProtectedRoute>
             } />
             <Route path="experts" element={
-              <ProtectedRoute allowedRoles={['admin']}>
+              <ProtectedRoute allowedRoles={['admin', 'moderator']}>
                 <AdminExperts />
               </ProtectedRoute>
             } />
