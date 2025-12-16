@@ -2,9 +2,10 @@ import { useState, useContext } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
 import { User, Mail, Lock, Briefcase, IndianRupee, ArrowRight, UserCircle2 } from 'lucide-react';
+import { GoogleLogin } from '@react-oauth/google';
 
 const Register = () => {
-  const { register } = useContext(AuthContext);
+  const { register, googleLogin } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -45,6 +46,20 @@ const Register = () => {
       setError(err);
       setIsLoading(false);
     }
+  };
+
+  const handleGoogleSuccess = async (response) => {
+      try {
+          setIsLoading(true);
+          await googleLogin(response.credential, {
+             role: formData.role,
+             expertProfile: formData.role === 'expert' ? formData.expertProfile : undefined
+          });
+          navigate('/dashboard');
+      } catch (err) {
+          setError('Google Login Failed');
+          setIsLoading(false);
+      }
   };
 
   return (
@@ -192,6 +207,28 @@ const Register = () => {
               )}
             </button>
           </form>
+
+          {/* Divider */}
+          <div className="relative mt-8">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-gray-100 dark:border-gray-700"></span>
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white px-2 text-gray-400 dark:bg-gray-900">Or continue with</span>
+            </div>
+          </div>
+
+          <div className="mt-6 flex justify-center">
+             <div className="w-full overflow-hidden flex justify-center">
+                <GoogleLogin
+                    onSuccess={handleGoogleSuccess}
+                    onError={() => setError('Google Login Failed')}
+                    theme="filled_blue"
+                    shape="pill"
+                    width="300" 
+                />
+             </div>
+          </div>
         </div>
 
         {/* Right Side: Visual/Branding (Reused/Swapped) */}

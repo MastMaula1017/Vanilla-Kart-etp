@@ -2,6 +2,7 @@ const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const sendEmail = require('../utils/sendEmail');
+const { OAuth2Client } = require('google-auth-library');
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
@@ -356,6 +357,72 @@ const uploadCoverPhoto = async (req, res) => {
   }
 };
 
+// @desc    Google Login
+// @route   POST /api/auth/google
+// @access  Public
+// @desc    Google Login
+// @route   POST /api/auth/google
+// @access  Public
+const googleLogin = async (req, res) => {
+  const { credential, role, expertProfile } = req.body;
+  const client = new OAuth2Client(process.env.VITE_GOOGLE_CLIENT_ID);
+
+  try {
+    const ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: process.env.VITE_GOOGLE_CLIENT_ID,
+    });
+    const { name, email, picture, sub: googleId } = ticket.getPayload();
+
+    let user = await User.findOne({ email });
+
+    if (user) {
+      if (!user.googleId) {
+          user.googleId = googleId; // Link account
+          await user.save();
+      }
+      res.json({
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        roles: user.roles,
+        expertProfile: user.expertProfile,
+        profileImage: user.profileImage || picture,
+        token: generateToken(user._id),
+      });
+    } else {
+      // Create new user
+      // Generate a random password since they use Google
+      const randomPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
+      
+      const newRole = role || 'customer';
+      const initialRoles = [newRole];
+
+      user = await User.create({
+        name,
+        email,
+        password: randomPassword,
+        googleId,
+        profileImage: picture,
+        roles: initialRoles,
+        expertProfile: newRole === 'expert' ? expertProfile : undefined
+      });
+
+      res.status(201).json({
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        roles: user.roles,
+        expertProfile: user.expertProfile,
+        profileImage: user.profileImage,
+        token: generateToken(user._id),
+      });
+    }
+  } catch (error) {
+    res.status(400).json({ message: 'Google login failed', error: error.message });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
@@ -365,5 +432,6 @@ module.exports = {
   resetPassword,
   getUserById,
   uploadProfilePhoto,
-  uploadCoverPhoto
+  uploadCoverPhoto,
+  googleLogin
 };

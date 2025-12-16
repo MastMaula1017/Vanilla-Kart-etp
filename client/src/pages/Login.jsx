@@ -4,6 +4,7 @@ import AuthContext from '../context/AuthContext';
 import CardSwap, { Card } from '../components/CardSwap';
 import { Mail, Lock, ArrowRight, Video, ShieldCheck, CreditCard, Eye, EyeOff } from 'lucide-react';
 import ShimmerButton from '../components/magicui/ShimmerButton';
+import { GoogleLogin } from '@react-oauth/google';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -12,7 +13,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useContext(AuthContext);
+  const { login, googleLogin } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -27,6 +28,17 @@ const Login = () => {
       setError(err);
       setIsLoading(false);
     }
+  };
+
+  const handleGoogleSuccess = async (response) => {
+      try {
+          setIsLoading(true);
+          await googleLogin(response.credential);
+          navigate('/dashboard');
+      } catch (err) {
+          setError('Google Login Failed');
+          setIsLoading(false);
+      }
   };
 
   return (
@@ -182,15 +194,16 @@ const Login = () => {
             </div>
           </div>
 
-          <div className="mt-6 grid grid-cols-2 gap-4">
-             <button className="flex items-center justify-center px-4 py-2 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors dark:border-gray-700 dark:hover:bg-gray-800">
-               <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="h-5 w-5 mr-2" alt="Google" />
-               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Google</span>
-             </button>
-             <button className="flex items-center justify-center px-4 py-2 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors dark:border-gray-700 dark:hover:bg-gray-800">
-               <img src="https://www.svgrepo.com/show/448234/github.svg" className="h-5 w-5 mr-2 dark:invert" alt="GitHub" />
-               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">GitHub</span>
-             </button>
+          <div className="mt-6 flex justify-center">
+             <div className="w-full overflow-hidden flex justify-center">
+                <GoogleLogin
+                    onSuccess={handleGoogleSuccess}
+                    onError={() => setError('Google Login Failed')}
+                    theme="filled_blue"
+                    shape="pill"
+                    width="300" 
+                />
+             </div>
           </div>
         </div>
       </div>
