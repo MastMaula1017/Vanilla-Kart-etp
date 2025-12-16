@@ -7,6 +7,12 @@ const appointmentSchema = new mongoose.Schema({
   startTime: { type: String, required: true }, // "10:00"
   endTime: { type: String, required: true },   // "11:00"
   status: { type: String, enum: ['pending', 'confirmed', 'cancelled', 'completed'], default: 'pending' },
+  payment: {
+    razorpayOrderId: { type: String },
+    razorpayPaymentId: { type: String },
+    amount: { type: Number },
+    status: { type: String, enum: ['pending', 'captured', 'failed'], default: 'pending' }
+  },
   notes: { type: String },
   createdAt: { type: Date, default: Date.now }
 });
