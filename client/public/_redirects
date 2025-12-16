@@ -1,1 +1,5 @@
+# Domain Redirection
+https://joyful-gaufre-719afc.netlify.app/* https://consultpro.vanshraturi.me/:splat 301!
+
+# SPA Fallback
 /* /index.html 200
