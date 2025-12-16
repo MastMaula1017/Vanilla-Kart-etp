@@ -32,14 +32,17 @@ import AdminInquiries from './pages/admin/AdminInquiries';
 
 import ScrollToTop from './components/ScrollToTop';
 
+import { SocketProvider } from './context/SocketContext';
+
 function App() {
   const location = useLocation();
   const isFullWidthNode = location.pathname === '/get-the-app' || location.pathname === '/become-expert';
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 dark:text-gray-100 transition-colors duration-300 flex flex-col">
-      <ScrollToTop />
-      <Navbar />
+      <SocketProvider>
+       <ScrollToTop />
+       <Navbar />
       <div className={`${isFullWidthNode ? '' : 'container mx-auto px-4 py-8'} flex-grow`}>
         <Routes>
           <Route path="/" element={<Home />} />
@@ -105,6 +108,7 @@ function App() {
           </Route>
         </Routes>
       </div>
+      </SocketProvider>
       <Footer />
     </div>
   );

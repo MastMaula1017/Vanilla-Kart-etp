@@ -172,6 +172,7 @@ const replyToInquiry = async (req, res) => {
         from: 'ConsultPro <support@mail.vanshraturi.me>', // Verified domain
         to: inquiry.email,
         subject: `Re: ${inquiry.subject || 'Inquiry'} - Response from ConsultPro`,
+        text: `Hello ${inquiry.name},\n\n${reply}\n\nBest regards,\nConsultPro Team`,
         html: `<p>Hello <strong>${inquiry.name}</strong>,</p><p>${reply}</p><br/><p>Best regards,<br/>ConsultPro Team</p>`
       });
 

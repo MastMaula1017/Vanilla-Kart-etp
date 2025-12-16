@@ -36,11 +36,44 @@ const ActivityGraph = () => {
                 <YAxis stroke="#9ca3af" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}`} />
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#374151" opacity={0.1} />
                 <Tooltip 
-                    contentStyle={{ backgroundColor: '#111827', borderColor: '#374151', color: '#f3f4f6', borderRadius: '0.5rem', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
-                    itemStyle={{ color: '#e5e7eb' }}
+                    content={({ active, payload, label }) => {
+                        if (active && payload && payload.length) {
+                            return (
+                                <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border border-gray-200 dark:border-gray-700 p-4 rounded-xl shadow-2xl">
+                                    <p className="text-gray-900 dark:text-white font-bold mb-2">{label}</p>
+                                    {payload.map((entry, index) => (
+                                        <div key={index} className="flex items-center gap-2 text-sm">
+                                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
+                                            <span className="text-gray-600 dark:text-gray-300 capitalize">{entry.name}:</span>
+                                            <span className="font-bold text-gray-900 dark:text-white">{entry.value}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            );
+                        }
+                        return null;
+                    }}
                 />
-                <Area type="monotone" dataKey="users" stroke="#8b5cf6" strokeWidth={3} fillOpacity={1} fill="url(#colorUsers)" name="Signups" />
-                <Area type="monotone" dataKey="appointments" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorApps)" name="Appointments" />
+                <Area 
+                    type="monotone" 
+                    dataKey="users" 
+                    stroke="#8b5cf6" 
+                    strokeWidth={3} 
+                    fillOpacity={1} 
+                    fill="url(#colorUsers)" 
+                    name="Signups"
+                    animationDuration={2000}
+                />
+                <Area 
+                    type="monotone" 
+                    dataKey="appointments" 
+                    stroke="#10b981" 
+                    strokeWidth={3} 
+                    fillOpacity={1} 
+                    fill="url(#colorApps)" 
+                    name="Appointments"
+                    animationDuration={2000}
+                />
             </AreaChart>
         </ResponsiveContainer>
     );

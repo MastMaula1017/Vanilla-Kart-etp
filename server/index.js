@@ -45,8 +45,25 @@ const io = new Server(server, {
   }
 });
 
+// Track online users
+const onlineUsers = new Map(); // userId -> Set(socketIds) because user might have multiple tabs
+
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
+
+  socket.on('setup', (userData) => {
+    socket.join(userData._id);
+    socket.userData = userData; // Store user data on socket for disconnect handling
+    
+    // Add socket id to user's set of sockets
+    if (!onlineUsers.has(userData._id)) {
+        onlineUsers.set(userData._id, new Set());
+    }
+    onlineUsers.get(userData._id).add(socket.id);
+    
+    // Emit only keys (userIds) as online
+    io.emit('online_users', Array.from(onlineUsers.keys()));
+  });
 
   socket.on('join_room', (room) => {
     socket.join(room);
@@ -98,6 +115,18 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     console.log('User disconnected:', socket.id);
     socket.broadcast.emit('callEnded'); // Notify others if user disconnects abruptly
+
+    // Remove user from online tracking
+    if (socket.userData && socket.userData._id) {
+        const userId = socket.userData._id;
+        if (onlineUsers.has(userId)) {
+            onlineUsers.get(userId).delete(socket.id);
+            if (onlineUsers.get(userId).size === 0) {
+                onlineUsers.delete(userId);
+            }
+        }
+        io.emit('online_users', Array.from(onlineUsers.keys()));
+    }
   });
 });
 

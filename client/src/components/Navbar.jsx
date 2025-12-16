@@ -36,6 +36,7 @@ const Navbar = () => {
             <Link to="/experts" className="hidden md:block text-gray-600 hover:text-primary dark:text-gray-300 dark:hover:text-white">Find Experts</Link>
             <Link to="/pricing" className="hidden md:block text-gray-600 hover:text-primary dark:text-gray-300 dark:hover:text-white">Plans & Pricing</Link>
             <Link to="/about" className="hidden md:block text-gray-600 hover:text-primary dark:text-gray-300 dark:hover:text-white">About Us</Link>
+            <Link to="/contact" className="hidden md:block text-gray-600 hover:text-primary dark:text-gray-300 dark:hover:text-white">Contact Us</Link>
             <ThemeToggle />
             {user ? (
               <div className="relative" ref={menuRef}>

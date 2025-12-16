@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
 import axios from '../../utils/axios';
-import { useAuth } from '../../context/AuthContext';import { Trash2, User, Search, Shield, ShieldOff, Headset } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
+import { useSocket } from '../../context/SocketContext';
+import { Trash2, User, Search, Shield, ShieldOff, Headset, Circle } from 'lucide-react';
 
 const AdminUsers = () => {
   const { user: currentUser } = useAuth();
+  const { onlineUsers } = useSocket();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -139,15 +142,22 @@ const AdminUsers = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-              {filteredUsers.map(user => (
+              {filteredUsers.map(user => {
+                const isOnline = onlineUsers?.includes(user._id);
+                return (
                 <tr key={user._id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
                   <td className="p-4">
                     <div className="flex items-center space-x-3">
-                        <div className="bg-violet-100 dark:bg-violet-900/30 p-2 rounded-lg">
+                        <div className="relative bg-violet-100 dark:bg-violet-900/30 p-2 rounded-lg">
                             <User size={20} className="text-violet-600 dark:text-violet-400" />
+                            {/* Online Status Dot */}
+                            <div className={`absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-white dark:border-gray-800 ${isOnline ? 'bg-green-500' : 'bg-red-500'}`} />
                         </div>
                         <div>
-                            <div className="font-semibold text-gray-900 dark:text-white">{user.name}</div>
+                            <div className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                {user.name}
+                                {isOnline && <span className="text-[10px] bg-green-100 text-green-600 px-1.5 py-0.5 rounded-full uppercase font-bold tracking-wider">Online</span>}
+                            </div>
                             <div className="text-sm text-gray-500 dark:text-gray-400">{user.email}</div>
                         </div>
                     </div>
@@ -233,7 +243,8 @@ const AdminUsers = () => {
                     )}
                   </td>
                 </tr>
-              ))}
+                );
+              })}
               {filteredUsers.length === 0 && (
                   <tr>
                       <td colSpan="4" className="p-8 text-center text-gray-500 dark:text-gray-400">

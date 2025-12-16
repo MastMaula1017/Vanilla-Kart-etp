@@ -63,60 +63,60 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center">
-      <div className="w-full max-w-5xl bg-white rounded-3xl shadow-2xl overflow-hidden grid grid-cols-1 md:grid-cols-2 border border-gray-100 dark:bg-gray-900 dark:border-gray-800 transition-colors duration-300">
+    <div className="min-h-[80vh] flex items-center justify-center p-4">
+      <div className="w-full max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden grid grid-cols-1 md:grid-cols-2 border border-gray-100 dark:bg-gray-900 dark:border-gray-800 transition-colors duration-300">
         
         {/* Left Side: Form */}
-        <div className="p-8 md:p-12 flex flex-col justify-center order-2 md:order-1">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Create Account</h1>
-            <p className="text-gray-500 dark:text-gray-400">
+        <div className="p-8 md:p-10 flex flex-col justify-center order-2 md:order-1">
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">Create Account</h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               Already have an account? <Link to="/login" className="text-primary font-semibold hover:underline">Log in</Link>
             </p>
           </div>
 
           {error && (
-            <div className="bg-red-50 border border-red-100 text-red-600 px-4 py-3 rounded-xl mb-6 text-sm flex items-center dark:bg-red-900/20 dark:border-red-800 dark:text-red-400">
+            <div className="bg-red-50 border border-red-100 text-red-600 px-4 py-2.5 rounded-lg mb-6 text-sm flex items-center dark:bg-red-900/20 dark:border-red-800 dark:text-red-400">
               <span className="mr-2">⚠️</span> {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4">
             
             {/* Role Selection Cards */}
-            <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="grid grid-cols-2 gap-3 mb-4">
               <div 
                 onClick={() => setFormData({...formData, role: 'customer'})}
-                className={`cursor-pointer border-2 rounded-xl p-4 flex flex-col items-center justify-center transition-all ${
+                className={`cursor-pointer border-2 rounded-lg p-3 flex flex-col items-center justify-center transition-all ${
                   formData.role === 'customer' 
                   ? 'border-primary bg-indigo-50 dark:bg-indigo-900/20' 
                   : 'border-gray-200 hover:border-gray-300 dark:border-gray-700'
                 }`}
               >
-                 <UserCircle2 size={32} className={`mb-2 ${formData.role === 'customer' ? 'text-primary' : 'text-gray-400'}`} />
-                 <span className={`font-semibold ${formData.role === 'customer' ? 'text-primary' : 'text-gray-600 dark:text-gray-400'}`}>Customer</span>
+                 <UserCircle2 size={24} className={`mb-1 ${formData.role === 'customer' ? 'text-primary' : 'text-gray-400'}`} />
+                 <span className={`text-sm font-semibold ${formData.role === 'customer' ? 'text-primary' : 'text-gray-600 dark:text-gray-400'}`}>Customer</span>
               </div>
               <div 
                 onClick={() => setFormData({...formData, role: 'expert'})}
-                 className={`cursor-pointer border-2 rounded-xl p-4 flex flex-col items-center justify-center transition-all ${
+                 className={`cursor-pointer border-2 rounded-lg p-3 flex flex-col items-center justify-center transition-all ${
                   formData.role === 'expert' 
                   ? 'border-primary bg-indigo-50 dark:bg-indigo-900/20' 
                   : 'border-gray-200 hover:border-gray-300 dark:border-gray-700'
                 }`}
               >
-                 <Briefcase size={32} className={`mb-2 ${formData.role === 'expert' ? 'text-primary' : 'text-gray-400'}`} />
-                 <span className={`font-semibold ${formData.role === 'expert' ? 'text-primary' : 'text-gray-600 dark:text-gray-400'}`}>Expert</span>
+                 <Briefcase size={24} className={`mb-1 ${formData.role === 'expert' ? 'text-primary' : 'text-gray-400'}`} />
+                 <span className={`text-sm font-semibold ${formData.role === 'expert' ? 'text-primary' : 'text-gray-600 dark:text-gray-400'}`}>Expert</span>
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Full Name</label>
-              <div className="relative">
-                <User className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide">Full Name</label>
+              <div className="relative group">
+                <User className="absolute left-3 top-3 h-4 w-4 text-gray-400 group-focus-within:text-primary transition-colors" />
                 <input
                   type="text"
                   name="name"
-                  className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:focus:border-primary"
                   value={formData.name}
                   onChange={handleChange}
                   required
@@ -125,14 +125,14 @@ const Register = () => {
               </div>
             </div>
             
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Email Address</label>
-              <div className="relative">
-                <Mail className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide">Email Address</label>
+              <div className="relative group">
+                <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400 group-focus-within:text-primary transition-colors" />
                 <input
                   type="email"
                   name="email"
-                  className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:focus:border-primary"
                   value={formData.email}
                   onChange={handleChange}
                   required
@@ -141,14 +141,14 @@ const Register = () => {
               </div>
             </div>
             
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
-              <div className="relative">
-                <Lock className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide">Password</label>
+              <div className="relative group">
+                <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400 group-focus-within:text-primary transition-colors" />
                 <input
                   type="password"
                   name="password"
-                  className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:focus:border-primary"
                   value={formData.password}
                   onChange={handleChange}
                   required
@@ -158,16 +158,16 @@ const Register = () => {
             </div>
 
             {formData.role === 'expert' && (
-              <div className="bg-indigo-50 dark:bg-indigo-900/10 p-4 rounded-xl space-y-4 border border-indigo-100 dark:border-indigo-900/30 animate-in fade-in slide-in-from-top-4 duration-300">
-                <h4 className="font-semibold text-indigo-900 dark:text-indigo-300 text-sm uppercase tracking-wide">Expert Profile Details</h4>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Specialization</label>
-                  <div className="relative">
-                     <Briefcase className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+              <div className="bg-indigo-50 dark:bg-indigo-900/10 p-4 rounded-lg space-y-3 border border-indigo-100 dark:border-indigo-900/30 animate-in fade-in slide-in-from-top-4 duration-300">
+                <h4 className="font-bold text-indigo-900 dark:text-indigo-300 text-xs uppercase tracking-wide">Expert Profile Details</h4>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide">Specialization</label>
+                  <div className="relative group">
+                     <Briefcase className="absolute left-3 top-3 h-4 w-4 text-gray-400 group-focus-within:text-primary transition-colors" />
                     <input
                       type="text"
                       name="specialization"
-                      className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+                      className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:focus:border-primary"
                       placeholder="e.g. Finance, Education"
                       value={formData.expertProfile.specialization}
                       onChange={handleProfileChange}
@@ -175,14 +175,14 @@ const Register = () => {
                     />
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Hourly Rate (₹)</label>
-                  <div className="relative">
-                     <IndianRupee className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide">Hourly Rate (₹)</label>
+                  <div className="relative group">
+                     <IndianRupee className="absolute left-3 top-3 h-4 w-4 text-gray-400 group-focus-within:text-primary transition-colors" />
                     <input
                       type="number"
                       name="hourlyRate"
-                      className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+                      className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:focus:border-primary"
                       value={formData.expertProfile.hourlyRate}
                       onChange={handleProfileChange}
                       required
@@ -196,30 +196,30 @@ const Register = () => {
             <button 
               type="submit" 
               disabled={isLoading}
-              className="w-full bg-primary hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center mt-2"
+              className="w-full bg-primary hover:bg-indigo-700 text-white font-bold py-3 rounded-lg transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center mt-2 text-sm"
             >
                {isLoading ? (
                 <span className="animate-pulse">Creating Account...</span>
               ) : (
                 <span className="flex items-center">
-                  Create Account <ArrowRight size={18} className="ml-2" />
+                  Create Account <ArrowRight size={16} className="ml-2" />
                 </span>
               )}
             </button>
           </form>
 
           {/* Divider */}
-          <div className="relative mt-8">
+          <div className="relative mt-6">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t border-gray-100 dark:border-gray-700"></span>
             </div>
-            <div className="relative flex justify-center text-xs uppercase">
+            <div className="relative flex justify-center text-[10px] uppercase font-bold tracking-wider">
               <span className="bg-white px-2 text-gray-400 dark:bg-gray-900">Or continue with</span>
             </div>
           </div>
 
           <div className="mt-6 flex justify-center">
-             <div className="w-full overflow-hidden flex justify-center">
+             <div className="w-full overflow-hidden flex justify-center transform hover:scale-[1.02] transition-transform duration-200">
                 <GoogleLogin
                     onSuccess={handleGoogleSuccess}
                     onError={() => setError('Google Login Failed')}
@@ -241,28 +241,28 @@ const Register = () => {
              <p className="text-gray-300 text-lg mb-8 leading-relaxed">
                Whether you're looking for advice or planning to share your expertise, you're in the right place.
              </p>
-             <div className="inline-block bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/10 text-left transform rotate-2 hover:rotate-0 transition-transform duration-500">
-             <a href="https://www.linkedin.com/in/003va/" target="_blank">
+             <div className="inline-block bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/10 text-left transform rotate-2 hover:rotate-0 transition-transform duration-500 mb-6">
+             <a href="" target="" rel="">
 
-               <p className="italic text-gray-200 mb-4">"This platform transformed how I network. The experts are top-notch and the video quality is seamless."</p>
+               <p className="italic text-gray-200 mb-4">"The streamlined booking process and crystal-clear video calls make consulting a breeze. Highly recommended!"</p>
                <div className="flex items-center space-x-3">
                  <div className="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center font-bold">VR</div>
                  <div>
-                   <p className="font-bold text-white">vansh Raturi</p>
-                   <p className="text-xs text-gray-400">Developer</p>
+                   <p className="font-bold text-white">Harsh</p>
+                   <p className="text-xs text-gray-400">Customer</p>
                  </div>
                </div>
               </a>
              </div>
-             <div className="inline-block bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/10 text-left transform rotate-2 hover:rotate-0 transition-transform duration-500">
-             <a href="https://www.linkedin.com/in/chaitanya-kalra-022b62291/" target="_blank">
+             <div className="inline-block bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/10 text-left transform -rotate-2 hover:rotate-0 transition-transform duration-500">
+             <a href="#" target="" rel="">
 
-               <p className="italic text-gray-200 mb-4">"This platform transformed how I network. The experts are top-notch and the video quality is seamless."</p>
+               <p className="italic text-gray-200 mb-4">"I found the perfect expert for my project within minutes. The insights I gained were game-changing for my career."</p>
                <div className="flex items-center space-x-3">
-                 <div className="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center font-bold">CK</div>
+                 <div className="w-10 h-10 rounded-full bg-purple-500 flex items-center justify-center font-bold">CK</div>
                  <div>
-                   <p className="font-bold text-white">Chaitanya Kalra</p>
-                   <p className="text-xs text-gray-400">Developer</p>
+                   <p className="font-bold text-white">Sarthak</p>
+                   <p className="text-xs text-gray-400">Customer</p>
                  </div>
                </div>
               </a>

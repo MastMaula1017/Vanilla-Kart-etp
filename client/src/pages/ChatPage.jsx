@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../utils/axios';
 import { io } from 'socket.io-client';
 import AuthContext from '../context/AuthContext';
+import { useSocket } from '../context/SocketContext';
 import { Send, Paperclip, Video, File, X, MoreVertical, Phone, Video as VideoIcon, Image as ImageIcon, User } from 'lucide-react';
 import SpotlightCard from '../components/SpotlightCard';
 import VideoCallModal from '../components/VideoCallModal';
@@ -14,6 +15,7 @@ const ENDPOINT = SOCKET_URL;
 const ChatPage = () => {
   const { userId } = useParams();
   const { user } = useContext(AuthContext);
+  const { onlineUsers } = useSocket();
   const navigate = useNavigate();
   
   // Chat State
@@ -23,6 +25,8 @@ const ChatPage = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   
+  const isRecipientOnline = onlineUsers?.includes(userId);
+
   // Video Call State
   const [stream, setStream] = useState(null);
   const [callActive, setCallActive] = useState(false);
@@ -120,10 +124,6 @@ const ChatPage = () => {
   }, []);
 
   const [remoteStream, setRemoteStream] = useState(null);
-
-  // ... refs ...
-
-  // ... useEffects ...
 
   const initializePeerConnection = async () => {
       const pc = new RTCPeerConnection({ 
@@ -294,6 +294,12 @@ const ChatPage = () => {
       }
   };
 
+    // Helper to force download from Cloudinary
+  const getDownloadUrl = (url) => {
+      if (!url) return '';
+      // Use our backend proxy to force download
+      return `${API_URL}/messages/download?url=${encodeURIComponent(url.startsWith('http') ? url : `${BASE_URL}${url}`)}`;
+  };
 
   // --- Existing Chat Logic ---
   const handleSendMessage = async (e) => {
@@ -371,9 +377,9 @@ const ChatPage = () => {
                     </div>
                     <div>
                         <h2 className="font-bold text-gray-900 dark:text-white">{recipient?.name || 'Loading...'}</h2>
-                        <span className="flex items-center text-xs text-green-500">
-                            <span className="w-2 h-2 bg-green-500 rounded-full mr-1"></span>
-                            Online
+                        <span className={`flex items-center text-xs ${isRecipientOnline ? 'text-green-500' : 'text-gray-400'}`}>
+                            <span className={`w-2 h-2 rounded-full mr-1 ${isRecipientOnline ? 'bg-green-500' : 'bg-gray-400'}`}></span>
+                            {isRecipientOnline ? 'Online' : 'Offline'}
                         </span>
                     </div>
                 </div>
@@ -424,9 +430,10 @@ const ChatPage = () => {
                                                 />
                                             ) : (
                                                 <a 
-                                                    href={msg.fileUrl.startsWith('http') ? msg.fileUrl : `${BASE_URL}${msg.fileUrl}`} 
+                                                    href={getDownloadUrl(msg.fileUrl)} 
                                                     target="_blank" 
-                                                    rel="noreferrer"
+                                                    rel="noopener noreferrer"
+                                                    download
                                                     className="flex items-center gap-3 p-3 bg-white/10 rounded-lg hover:bg-white/20 transition-colors"
                                                 >
                                                     <File size={24} />

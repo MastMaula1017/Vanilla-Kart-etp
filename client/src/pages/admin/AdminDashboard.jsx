@@ -26,16 +26,22 @@ const AdminDashboard = () => {
   }, []);
 
   const StatCard = ({ title, value, icon: Icon, color, subtext }) => (
-    <SpotlightCard className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-lg hover:shadow-xl transition-all duration-300" spotlightColor={color}>
+    <SpotlightCard className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-lg hover:shadow-xl transition-all duration-300 group" spotlightColor={color}>
       <div className="flex items-center justify-between mb-4">
-        <div className="p-3 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 border border-gray-200 dark:border-gray-600">
-           <Icon size={28} className="text-gray-900 dark:text-gray-100" style={{ color: color }} />
+        <div 
+            className="p-3 rounded-xl border transition-colors duration-300"
+            style={{ 
+                backgroundColor: `${color}15`, // 15 = ~8% opacity hex
+                borderColor: `${color}30`      // 30 = ~19% opacity hex
+            }}
+        >
+           <Icon size={28} style={{ color: color }} />
         </div>
         <span className="text-4xl font-bold text-gray-900 dark:text-white tracking-tight">{value}</span>
       </div>
       <div>
         <h3 className="text-gray-500 dark:text-gray-400 font-medium text-sm uppercase tracking-wider">{title}</h3>
-        {subtext && <p className="text-xs font-medium text-violet-500 mt-1">{subtext}</p>}
+        {subtext && <p className="text-xs font-medium mt-1" style={{ color: color }}>{subtext}</p>}
       </div>
     </SpotlightCard>
   );
