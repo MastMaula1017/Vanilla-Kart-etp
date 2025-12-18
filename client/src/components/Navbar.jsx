@@ -4,6 +4,7 @@ import AuthContext from '../context/AuthContext';
 import { LogOut, User, Menu, ChevronDown, Settings } from 'lucide-react';
 
 import ThemeToggle from './ThemeToggle';
+import NotificationDropdown from './NotificationDropdown';
 
 const Navbar = () => {
   const { user, logout } = useContext(AuthContext);
@@ -37,7 +38,9 @@ const Navbar = () => {
             <Link to="/pricing" className="hidden md:block text-gray-600 hover:text-primary dark:text-gray-300 dark:hover:text-white">Plans & Pricing</Link>
             <Link to="/about" className="hidden md:block text-gray-600 hover:text-primary dark:text-gray-300 dark:hover:text-white">About Us</Link>
             <Link to="/contact" className="hidden md:block text-gray-600 hover:text-primary dark:text-gray-300 dark:hover:text-white">Contact Us</Link>
+            <Link to="/contact" className="hidden md:block text-gray-600 hover:text-primary dark:text-gray-300 dark:hover:text-white">Contact Us</Link>
             <ThemeToggle />
+            {user && <NotificationDropdown />}
             {user ? (
               <div className="relative" ref={menuRef}>
                 <button 
@@ -68,13 +71,13 @@ const Navbar = () => {
                     >
                         Dashboard
                     </Link>
-                    {(user.roles?.includes('admin') || user.roles?.includes('inquiry_support')) && (
+                    {(user.roles?.includes('admin') || user.roles?.includes('inquiry_support') || user.roles?.includes('moderator')) && (
                       <Link 
                           to="/admin" 
                           className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
                           onClick={() => setIsMenuOpen(false)}
                       >
-                          {user.roles.includes('admin') ? 'Admin Panel' : 'Inquiries Panel'}
+                          {user.roles.includes('admin') || user.roles.includes('moderator') ? 'Admin Panel' : 'Inquiries Panel'}
                       </Link>
                     )}
                     <Link 

@@ -26,6 +26,17 @@ export const SocketProvider = ({ children }) => {
           setOnlineUsers(users);
       });
 
+      socketIo.on('notification', () => {
+          // You might want to trigger a re-fetch in NotificationDropdown 
+          // essentially this event just signals "something new"
+          // Ideally, we emit this event to the specific user room
+          // For simple implementation, we can use a custom event dispatch or Context
+          // But since NotificationDropdown fetches on mount and poll, 
+          // we can just stick to that or expose a refresh function.
+          // TO keep it simple and centralized, let's dispatch a custom window event
+          window.dispatchEvent(new Event('new_notification'));
+      });
+
       return () => {
         socketIo.disconnect();
       };

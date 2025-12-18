@@ -5,7 +5,10 @@ import {
   Briefcase, 
   MessageSquare, 
   LogOut, 
-  ChevronRight 
+
+  ChevronRight,
+  Tag,
+  CheckCircle
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -23,10 +26,12 @@ const AdminLayout = () => {
 
   // Define allowed roles for each item
   const allNavItems = [
-    { name: 'Dashboard', path: '/admin', icon: LayoutDashboard, roles: ['admin', 'inquiry_support'] },
+    { name: 'Dashboard', path: '/admin', icon: LayoutDashboard, roles: ['admin', 'inquiry_support', 'moderator'] },
     { name: 'Users', path: '/admin/users', icon: Users, roles: ['admin', 'moderator'] },
     { name: 'Experts', path: '/admin/experts', icon: Briefcase, roles: ['admin', 'moderator'] },
     { name: 'Inquiries', path: '/admin/inquiries', icon: MessageSquare, roles: ['admin', 'inquiry_support', 'moderator'] },
+    { name: 'Coupons', path: '/admin/coupons', icon: Tag, roles: ['admin'] },
+    { name: 'Verifications', path: '/admin/verifications', icon: CheckCircle, roles: ['admin', 'moderator'] },
   ];
 
   const navItems = allNavItems.filter(item => 

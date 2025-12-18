@@ -423,6 +423,51 @@ const googleLogin = async (req, res) => {
   }
 };
 
+// @desc    Upload verification document
+// @route   POST /api/auth/profile/verification
+// @access  Protected (Expert only)
+const uploadVerificationDocument = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    const user = await User.findById(req.user._id);
+    if (user && user.roles.includes('expert')) {
+      if (!user.expertProfile) {
+          user.expertProfile = {};
+      }
+      if (!user.expertProfile.verificationDocuments) {
+          user.expertProfile.verificationDocuments = [];
+      }
+      
+      let fileUrl = req.file.path;
+      if (req.file.filename) {
+          // Local storage used
+          const baseUrl = process.env.BACKEND_URL || `${req.protocol}://${req.get('host')}`;
+          fileUrl = `${baseUrl}/uploads/${req.file.filename}`;
+      }
+      
+      user.expertProfile.verificationDocuments.push(fileUrl);
+      user.expertProfile.verificationStatus = 'pending';
+      user.markModified('expertProfile'); // Ensure mixed type updates are saved
+
+      const updatedUser = await user.save();
+      
+      res.json({
+        verificationDocuments: updatedUser.expertProfile.verificationDocuments,
+        verificationStatus: updatedUser.expertProfile.verificationStatus
+      });
+    } else {
+      res.status(404).json({ message: 'User not found or not an expert' });
+    }
+  } catch (error) {
+    console.error("Verification upload error:", error);
+    res.status(500).json({ message: 'Server Error', error: error.message });
+  }
+};
+
+
 module.exports = {
   registerUser,
   loginUser,
@@ -433,5 +478,7 @@ module.exports = {
   getUserById,
   uploadProfilePhoto,
   uploadCoverPhoto,
-  googleLogin
+  googleLogin,
+  uploadVerificationDocument
 };
+

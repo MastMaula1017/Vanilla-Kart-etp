@@ -11,7 +11,8 @@ import {
   Check, 
   X, 
   AlertCircle,
-  LayoutDashboard
+  LayoutDashboard,
+  CreditCard
 } from 'lucide-react';
 
 const Dashboard = () => {
@@ -86,8 +87,17 @@ const Dashboard = () => {
            <p className="text-gray-500 dark:text-gray-400">Manage your appointments and sessions</p>
         </div>
       </div>
-      
-      <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl overflow-hidden border border-gray-100 dark:border-gray-700 transition-all hover:shadow-2xl">
+       
+       {user.roles && user.roles.includes('expert') && (
+        <div className="flex justify-end mb-6">
+            <Link to="/expert/payments" className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg shadow-md hover:shadow-lg transition-all">
+                <CreditCard className="mr-2" size={20} />
+                View Payments
+            </Link>
+        </div>
+       )}
+
+       <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl overflow-hidden border border-gray-100 dark:border-gray-700 transition-all hover:shadow-2xl">
         <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-800/50">
            <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center">
              <Calendar className="mr-2 text-violet-500" size={20} />

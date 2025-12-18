@@ -1,7 +1,7 @@
 import { useState, useContext, useEffect } from 'react';
 import axios from '../utils/axios';
 import AuthContext from '../context/AuthContext';
-import { User, Mail, Lock, Save, AlertCircle, CheckCircle, Shield, Briefcase, IndianRupee, FileText } from 'lucide-react';
+import { User, Mail, Lock, Save, AlertCircle, CheckCircle, Shield, Briefcase, IndianRupee, FileText, Loader } from 'lucide-react';
 
 const ProfilePage = () => {
   const { user, updateUser } = useContext(AuthContext);
@@ -125,6 +125,19 @@ const ProfilePage = () => {
                 <Shield size={18} />
                 <span>Security</span>
             </button>
+            {user?.roles?.includes('expert') && (
+                <button 
+                    onClick={() => setActiveTab('verification')}
+                    className={`w-full text-left px-4 py-3 rounded-xl flex items-center space-x-3 transition-all font-medium ${
+                        activeTab === 'verification' 
+                        ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/30' 
+                        : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'
+                    }`}
+                >
+                    <CheckCircle size={18} />
+                    <span>Verification</span>
+                </button>
+            )}
         </div>
 
         {/* Main Content Area */}
@@ -353,6 +366,100 @@ const ProfilePage = () => {
                                 </button>
                             </div>
                         </form>
+                    ) : activeTab === 'verification' ? (
+                        <div className="space-y-8">
+                             <div>
+                                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
+                                    <CheckCircle className="mr-2 text-violet-500" size={24} />
+                                    Expert Verification
+                                </h2>
+
+                                <div className="mb-8 p-6 bg-gray-50 dark:bg-gray-700/50 rounded-xl border border-gray-200 dark:border-gray-700">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Current Status</h3>
+                                        <span className={`px-4 py-1.5 rounded-full text-sm font-bold uppercase tracking-wider ${
+                                            user?.expertProfile?.verificationStatus === 'verified'
+                                            ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                                            : user?.expertProfile?.verificationStatus === 'pending'
+                                            ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                                            : user?.expertProfile?.verificationStatus === 'rejected'
+                                            ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                                            : 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400'
+                                        }`}>
+                                            {user?.expertProfile?.verificationStatus || 'Unverified'}
+                                        </span>
+                                    </div>
+                                    <p className="text-gray-600 dark:text-gray-300">
+                                        {user?.expertProfile?.verificationStatus === 'verified' 
+                                            ? "Congratulations! Your profile is verified. You have the Blue Tick badge."
+                                            : user?.expertProfile?.verificationStatus === 'pending'
+                                            ? "Your verification documents have been submitted and are under review. This usually takes 24-48 hours."
+                                            : "Upload your professional credentials (ID, Certificates, Licenses) to get verified and earn the Blue Tick badge."
+                                        }
+                                    </p>
+                                </div>
+
+                                {(!user?.expertProfile?.verificationStatus || user?.expertProfile?.verificationStatus === 'unverified' || user?.expertProfile?.verificationStatus === 'rejected') && (
+                                    <div className="border-t border-gray-200 dark:border-gray-700 pt-8">
+                                        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Upload Documents</h3>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                                            Please upload a clear copy of your Government ID or Professional Certificate. Supported formats: JPG, PNG, PDF.
+                                        </p>
+
+                                        <div className="max-w-xl">
+                                            <div className="relative group w-full h-48 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-700/30 hover:bg-violet-50 dark:hover:bg-violet-900/10 hover:border-violet-400 transition-all cursor-pointer">
+                                                {loading ? (
+                                                    <div className="flex flex-col items-center animate-pulse">
+                                                        <Loader size={40} className="text-violet-500 animate-spin mb-3" />
+                                                        <span className="font-medium text-gray-500 dark:text-gray-400">Uploading...</span>
+                                                    </div>
+                                                ) : (
+                                                    <>
+                                                        <input 
+                                                            type="file" 
+                                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                                            onChange={async (e) => {
+                                                                const file = e.target.files[0];
+                                                                if(!file) return;
+
+                                                                const formData = new FormData();
+                                                                formData.append('document', file);
+                                                                
+                                                                try {
+                                                                    setLoading(true);
+                                                                    const { data } = await axios.post('/auth/profile/verification', formData, {
+                                                                        headers: { 'Content-Type': 'multipart/form-data' }
+                                                                    });
+                                                                    
+                                                                    // Update local user state
+                                                                    const updatedUser = { ...user };
+                                                                    if (!updatedUser.expertProfile) updatedUser.expertProfile = {};
+                                                                    updatedUser.expertProfile.verificationDocuments = data.verificationDocuments;
+                                                                    updatedUser.expertProfile.verificationStatus = data.verificationStatus;
+                                                                    
+                                                                    updateUser(updatedUser);
+                                                                    
+                                                                    setMessage({ type: 'success', text: 'Document uploaded successfully. Status pending.' });
+                                                                } catch (error) {
+                                                                    setMessage({ type: 'error', text: 'Failed to upload document' });
+                                                                } finally {
+                                                                    setLoading(false);
+                                                                }
+                                                            }}
+                                                        />
+                                                        <div className="flex flex-col items-center text-gray-500 dark:text-gray-400 group-hover:text-violet-500 transition-colors">
+                                                            <FileText size={40} className="mb-3" />
+                                                            <span className="font-medium text-sm">Click to upload or drag and drop</span>
+                                                            <span className="text-xs mt-1">Maximum file size: 5MB</span>
+                                                        </div>
+                                                    </>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                             </div>
+                        </div>
                     ) : (
                         <form onSubmit={handleChangePassword} className="space-y-6">
                             <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">

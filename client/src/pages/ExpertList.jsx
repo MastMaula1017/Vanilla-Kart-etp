@@ -3,7 +3,7 @@ import axios from '../utils/axios';
 import { Link } from 'react-router-dom';
 import SpotlightCard from '../components/SpotlightCard';
 import WordRotate from '../components/magicui/WordRotate';
-import { Search, MapPin, Star, ArrowRight } from 'lucide-react';
+import { Search, MapPin, Star, ArrowRight, CheckCircle } from 'lucide-react';
 
 const ExpertList = () => {
   const [experts, setExperts] = useState([]);
@@ -25,8 +25,8 @@ const ExpertList = () => {
   }, []);
 
   const filteredExperts = experts.filter(expert => 
-    expert.expertProfile.specialization.toLowerCase().includes(filter.toLowerCase()) ||
-    expert.name.toLowerCase().includes(filter.toLowerCase())
+    (expert.expertProfile?.specialization?.toLowerCase() || '').includes(filter.toLowerCase()) ||
+    (expert.name?.toLowerCase() || '').includes(filter.toLowerCase())
   );
 
   if (loading) return (
@@ -79,9 +79,19 @@ const ExpertList = () => {
                     <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 border-2 border-white dark:border-gray-950 rounded-full"></div>
                   </div>
                   <div>
-                    <h3 className="font-bold text-xl text-gray-900 dark:text-white group-hover:text-indigo-500 transition-colors">
-                      {expert.name}
-                    </h3>
+                    <div className="flex items-center gap-2">
+                        <h3 className="font-bold text-xl text-gray-900 dark:text-white group-hover:text-indigo-500 transition-colors">
+                            {expert.name}
+                        </h3>
+                        {expert.expertProfile?.verificationStatus === 'verified' && (
+                            <div className="relative flex items-center">
+                                <CheckCircle size={18} className="peer text-blue-500 fill-blue-500 text-white cursor-pointer" />
+                                <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-xs font-bold text-white bg-gray-900 rounded opacity-0 peer-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50 shadow-lg">
+                                    Verified
+                                </span>
+                            </div>
+                        )}
+                    </div>
                     <p className="text-sm font-medium text-indigo-600 dark:text-indigo-400 flex items-center bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-full w-fit mt-1">
                       {expert.expertProfile.specialization}
                     </p>

@@ -257,6 +257,70 @@ const getMonthlyStats = async (req, res) => {
   }
 };
 
+// @desc    Get pending verification requests
+// @route   GET /api/admin/verifications
+// @access  Private/Admin
+const getVerificationRequests = async (req, res) => {
+  try {
+    const experts = await User.find({ 
+      roles: 'expert', 
+      'expertProfile.verificationStatus': 'pending' 
+    }).select('name email expertProfile');
+    res.json(experts);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Update verification status
+// @route   PUT /api/admin/verifications/:id
+// @access  Private/Admin
+const updateVerificationStatus = async (req, res) => {
+  const { status, badges } = req.body; // status: 'verified' | 'rejected'
+  
+  try {
+    const user = await User.findById(req.params.id);
+    
+    if (user && user.roles.includes('expert')) {
+      if (user.expertProfile) {
+          user.expertProfile.verificationStatus = status;
+          
+          if (status === 'verified') {
+              // Add 'Verified' badge if not present
+              if (!user.expertProfile.badges) {
+                  user.expertProfile.badges = [];
+              }
+              if (!user.expertProfile.badges.includes('Verified')) {
+                  user.expertProfile.badges.push('Verified');
+              }
+              
+              // Add other badges if provided
+               if (badges && Array.isArray(badges)) {
+                  badges.forEach(badge => {
+                      if (!user.expertProfile.badges.includes(badge)) {
+                          user.expertProfile.badges.push(badge);
+                      }
+                  });
+              }
+          } else if (status === 'rejected') {
+              // Remove 'Verified' badge
+              if (user.expertProfile.badges) {
+                  user.expertProfile.badges = user.expertProfile.badges.filter(b => b !== 'Verified');
+              }
+          }
+          user.markModified('expertProfile');
+      }
+      
+      const updatedUser = await user.save();
+      res.json(updatedUser);
+    } else {
+      res.status(404).json({ message: 'User not found or not an expert' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   getDashboardStats,
   getAllUsers,
@@ -266,6 +330,8 @@ module.exports = {
   updateInquiryStatus,
   replyToInquiry,
   updateUserRoles,
-  getMonthlyStats
+  getMonthlyStats,
+  getVerificationRequests,
+  updateVerificationStatus
 };
 

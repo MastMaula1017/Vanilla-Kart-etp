@@ -21,7 +21,14 @@ const userSchema = new mongoose.Schema({
       day: { type: String }, // e.g., "Monday"
       startTime: { type: String }, // e.g., "09:00"
       endTime: { type: String }   // e.g., "17:00"
-    }]
+    }],
+    verificationStatus: { 
+      type: String, 
+      enum: ['unverified', 'pending', 'verified', 'rejected'], 
+      default: 'unverified' 
+    },
+    verificationDocuments: [{ type: String }],
+    badges: [{ type: String }] // e.g., "Top Rated", "Verified"
   },
   resetPasswordOtp: String,
   resetPasswordOtpExpire: Date,

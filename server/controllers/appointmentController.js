@@ -1,4 +1,5 @@
 const Appointment = require('../models/Appointment');
+const Coupon = require('../models/Coupon');
 
 // @desc    Create new appointment
 // @route   POST /api/appointments
@@ -6,7 +7,7 @@ const Appointment = require('../models/Appointment');
 const crypto = require('crypto');
 
 const createAppointment = async (req, res) => {
-  const { expertId, date, startTime, endTime, notes, payment } = req.body;
+  const { expertId, date, startTime, endTime, notes, payment, couponCode } = req.body;
 
   if (req.user._id.toString() === expertId) {
     return res.status(400).json({ message: 'You cannot book an appointment with yourself' });
@@ -23,6 +24,15 @@ const createAppointment = async (req, res) => {
 
       if (razorpaySignature !== expectedSign) {
           return res.status(400).json({ message: "Invalid payment signature" });
+      }
+
+      // Increment Coupon Usage if payment is successful
+      if (couponCode) {
+          const coupon = await Coupon.findOne({ code: couponCode.toUpperCase() });
+          if (coupon) {
+              coupon.usedCount += 1;
+              await coupon.save();
+          }
       }
   }
 
@@ -42,6 +52,45 @@ const createAppointment = async (req, res) => {
       } : undefined,
       status: payment ? 'confirmed' : 'pending' // Auto-confirm if paid
     });
+
+    // Create Notification for the Expert
+    const Notification = require('../models/Notification');
+    await Notification.create({
+        recipient: expertId,
+        sender: req.user._id,
+        type: 'appointment_request',
+        message: `New appointment request from ${req.user.name}`,
+        link: '/dashboard'
+    });
+
+    // Notify Customer of Payment Success
+    if (payment) {
+        await Notification.create({
+            recipient: req.user._id,
+            sender: null, // System notification
+            type: 'payment_success',
+            message: `Payment of ₹${payment.amount} successful!`,
+            link: '/dashboard'
+        });
+    }
+    
+    // Real-time notification
+    const io = req.app.get('io');
+    if (io) {
+        // We emit to the specific user room (userId)
+        io.to(expertId.toString()).emit('notification', {
+            type: 'appointment_request',
+            message: `New appointment request from ${req.user.name}`
+        });
+
+        // Emit to Customer (Payment Success)
+        if (payment) {
+            io.to(req.user._id.toString()).emit('notification', {
+                type: 'payment_success',
+                message: `Payment of ₹${payment.amount} successful!`
+            });
+        }
+    }
 
     res.status(201).json(appointment);
   } catch (error) {

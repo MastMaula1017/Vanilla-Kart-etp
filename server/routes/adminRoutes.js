@@ -10,7 +10,9 @@ const {
   updateInquiryStatus,
   replyToInquiry,
   updateUserRoles,
-  getMonthlyStats
+  getMonthlyStats,
+  getVerificationRequests,
+  updateVerificationStatus
 } = require('../controllers/adminController');
 
 // All routes are protected and require 'admin' role
@@ -32,5 +34,9 @@ router.put('/users/:id/roles', authorize('admin', 'moderator'), updateUserRoles)
 router.get('/inquiries', authorize('admin', 'inquiry_support', 'moderator'), getAllInquiries);
 router.put('/inquiries/:id', authorize('admin', 'inquiry_support', 'moderator'), updateInquiryStatus);
 router.post('/inquiries/:id/reply', authorize('admin', 'inquiry_support', 'moderator'), replyToInquiry);
+
+// Verification Requests
+router.get('/verifications', authorize('admin', 'moderator'), getVerificationRequests);
+router.put('/verifications/:id', authorize('admin', 'moderator'), updateVerificationStatus);
 
 module.exports = router;

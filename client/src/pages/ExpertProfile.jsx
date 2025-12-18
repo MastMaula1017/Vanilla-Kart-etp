@@ -14,7 +14,8 @@ import {
   CheckCircle,
   User,
   ArrowLeft,
-  ArrowRight
+  ArrowRight,
+  Loader
 } from 'lucide-react';
 
 const ExpertProfile = () => {
@@ -35,6 +36,12 @@ const ExpertProfile = () => {
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
   const [reviewLoading, setReviewLoading] = useState(true);
+
+  // Coupon State
+  const [couponCode, setCouponCode] = useState('');
+  const [discountApplied, setDiscountApplied] = useState(null);
+  const [isVerifyingCoupon, setIsVerifyingCoupon] = useState(false);
+  const [bookingLoading, setBookingLoading] = useState(false);
 
   useEffect(() => {
     const fetchExpert = async () => {
@@ -98,18 +105,24 @@ const ExpertProfile = () => {
       navigate('/login');
       return;
     }
+    
+    setBookingLoading(true);
 
     const res = await loadScript('https://checkout.razorpay.com/v1/checkout.js');
 
     if (!res) {
       alert('Razorpay SDK failed to load. Are you online?');
+      setBookingLoading(false);
       return;
     }
 
     try {
       // 1. Create Order
       const amount = expert.expertProfile.hourlyRate; // Assuming hourly rate is the total cost for now
-      const { data: order } = await axios.post('/payment/create-order', { amount });
+      const { data: order } = await axios.post('/payment/create-order', { 
+        amount,
+        couponCode: discountApplied ? couponCode : undefined
+      });
 
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID, // Enter the Key ID generated from the Dashboard
@@ -132,14 +145,22 @@ const ExpertProfile = () => {
                         razorpayOrderId: response.razorpay_order_id,
                         razorpayPaymentId: response.razorpay_payment_id,
                         razorpaySignature: response.razorpay_signature,
-                        amount: amount
-                    }
+                        amount: order.amount / 100 // Use the actual paid amount (converted from paise)
+                    },
+                    couponCode: discountApplied ? couponCode : undefined
                 });
                 alert('Payment Successful & Appointment Booked!');
                 navigate('/dashboard');
             } catch (err) {
                 console.error(err);
                 alert('Payment successful but appointment creation failed. Contact support.');
+            } finally {
+                setBookingLoading(false);
+            }
+        },
+        modal: {
+            ondismiss: function() {
+                setBookingLoading(false);
             }
         },
         prefill: {
@@ -158,6 +179,7 @@ const ExpertProfile = () => {
     } catch (error) {
       console.error(error);
       alert('Error initiating payment');
+      setBookingLoading(false);
     }
   };
 
@@ -218,9 +240,16 @@ const ExpertProfile = () => {
                         <div className="flex-1 mb-2">
                              <div className="flex items-center space-x-3 mb-2">
                                 <h1 className="text-4xl font-bold text-white tracking-tight">{expert.name}</h1>
-                                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-green-500/10 text-green-400 border border-green-500/20">
-                                    <CheckCircle size={12} className="mr-1" /> Verified
-                                </span>
+                                {expert.expertProfile.verificationStatus === 'verified' && (
+                                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-green-500/10 text-green-400 border border-green-500/20" title="Verified Expert">
+                                        <CheckCircle size={12} className="mr-1" /> Verified
+                                    </span>
+                                )}
+                                {expert.expertProfile.badges?.map((badge, idx) => (
+                                    <span key={idx} className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 ml-2">
+                                        <Shield size={12} className="mr-1" /> {badge}
+                                    </span>
+                                ))}
                              </div>
                              <p className="text-indigo-400 font-medium text-lg flex items-center">
                                 {expert.expertProfile.specialization}
@@ -378,9 +407,77 @@ const ExpertProfile = () => {
                                 ></textarea>
                             </div>
 
-                            <button type="submit" className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/25 transform transition hover:-translate-y-0.5 relative overflow-hidden group">
+                            {/* Coupon Input */}
+                             <div>
+                                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">Coupon Code</label>
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        className="flex-1 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:text-white transition-all text-sm font-medium"
+                                        placeholder="Enter code"
+                                        value={couponCode}
+                                        onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                                        disabled={!!discountApplied}
+                                    />
+                                    {discountApplied ? (
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setDiscountApplied(null);
+                                                setCouponCode('');
+                                            }}
+                                            className="px-4 py-2 bg-red-100 text-red-600 rounded-xl font-medium text-sm hover:bg-red-200"
+                                        >
+                                            Remove
+                                        </button>
+                                    ) : (
+                                        <button
+                                            type="button"
+                                            onClick={async () => {
+                                                if (!couponCode) return;
+                                                setIsVerifyingCoupon(true);
+                                                try {
+                                                    const { data } = await axios.post('/coupons/verify', { code: couponCode });
+                                                    setDiscountApplied(data);
+                                                    // alert(`Coupon Applied: ${data.discountType === 'percentage' ? data.value + '%' : '₹' + data.value} Off`);
+                                                } catch (error) {
+                                                    alert(error.response?.data?.message || 'Invalid Coupon');
+                                                    setCouponCode('');
+                                                } finally {
+                                                    setIsVerifyingCoupon(false);
+                                                }
+                                            }}
+                                            disabled={isVerifyingCoupon || !couponCode}
+                                            className="px-4 py-2 bg-gray-200 dark:bg-zinc-800 text-gray-800 dark:text-gray-200 rounded-xl font-medium text-sm hover:bg-gray-300 dark:hover:bg-zinc-700 disabled:opacity-50"
+                                        >
+                                            {isVerifyingCoupon ? '...' : 'Apply'}
+                                        </button>
+                                    )}
+                                </div>
+                                {discountApplied && (
+                                    <p className="mt-2 text-sm text-green-600 flex items-center">
+                                        <CheckCircle size={14} className="mr-1" />
+                                        Coupon applied! You save {discountApplied.discountType === 'percentage' ? `${discountApplied.value}%` : `₹${discountApplied.value}`}
+                                    </p>
+                                )}
+                            </div>
+
+                            <button 
+                                type="submit" 
+                                disabled={bookingLoading}
+                                className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/25 transform transition hover:-translate-y-0.5 relative overflow-hidden group disabled:opacity-70 disabled:cursor-not-allowed"
+                            >
                                 <span className="relative z-10 flex items-center justify-center">
-                                    Confirm Booking <ArrowRight size={18} className="ml-2 group-hover:translate-x-1 transition-transform" />
+                                    {bookingLoading ? (
+                                        <>
+                                            <Loader size={20} className="animate-spin mr-2" />
+                                            Processing...
+                                        </>
+                                    ) : (
+                                        <>
+                                            Confirm Booking <ArrowRight size={18} className="ml-2 group-hover:translate-x-1 transition-transform" />
+                                        </>
+                                    )}
                                 </span>
                             </button>
                         </form>

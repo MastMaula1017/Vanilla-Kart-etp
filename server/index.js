@@ -37,6 +37,71 @@ app.use('/api/questions', require('./routes/questionRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/turn', require('./routes/turnRoutes'));
 app.use('/api/payment', require('./routes/paymentRoutes'));
+app.use('/api/coupons', require('./routes/couponRoutes'));
+app.use('/api/notifications', require('./routes/notificationRoutes'));
+
+// Cron Job for Appointment Reminders (Every minute)
+const cron = require('node-cron');
+const Appointment = require('./models/Appointment');
+const Notification = require('./models/Notification');
+
+cron.schedule('* * * * *', async () => {
+    try {
+        const tenMinutesFromNow = new Date(Date.now() + 10 * 60 * 1000);
+        const elevenMinutesFromNow = new Date(Date.now() + 11 * 60 * 1000);
+
+        // Calculate 10 minutes from now (start of the minute)
+        const now = new Date();
+        const tenMinLater = new Date(now.getTime() + 10 * 60000);
+        
+        // Format to match stored Date (YYYY-MM-DDT00:00:00.000Z usually) and Time HH:MM
+        // Since Date is stored as Date object usually set to midnight or specific time, 
+        // and startTime is string, checking is complex.
+        
+        // Strategy: 
+        // 1. Find appointments where date is TODAY (ignoring time component of date object)
+        // 2. Filter by startTime matching 10 mins from now.
+        
+        const startOfDay = new Date(tenMinLater.setHours(0,0,0,0));
+        const endOfDay = new Date(tenMinLater.setHours(23,59,59,999));
+        
+        const targetTime = `${tenMinLater.getHours().toString().padStart(2, '0')}:${tenMinLater.getMinutes().toString().padStart(2, '0')}`;
+        
+        const appointments = await Appointment.find({
+            date: {
+                $gte: startOfDay,
+                $lte: endOfDay
+            },
+            startTime: targetTime,
+            status: 'confirmed'
+        }).populate('customer expert');
+
+        for (const apt of appointments) {
+            // Check if notification already sent to avoid duplicates (optional optimization)
+            
+            // Notify Customer
+            await Notification.create({
+                recipient: apt.customer._id,
+                type: 'reminder',
+                message: `Reminder: Your session with ${apt.expert.name} starts in 10 minutes.`,
+                link: '/dashboard'
+            });
+            
+            // Notify Expert
+            await Notification.create({
+                recipient: apt.expert._id,
+                type: 'reminder',
+                message: `Reminder: Session with ${apt.customer.name} starts in 10 minutes.`,
+                link: '/dashboard'
+            });
+            
+            // Optional: Emit socket event if we had access to IO here (needs restructuring to access IO globally or pass it)
+            // For now, these will be picked up on next fetch or we can attach IO to app/global.
+        }
+    } catch (error) {
+        console.error('Cron job error:', error);
+    }
+});
 
 const io = new Server(server, {
   cors: {
@@ -45,6 +110,9 @@ const io = new Server(server, {
     credentials: true
   }
 });
+
+// Make io accessible to our router
+app.set('io', io);
 
 // Track online users
 const onlineUsers = new Map(); // userId -> Set(socketIds) because user might have multiple tabs
@@ -82,6 +150,22 @@ io.on('connection', (socket) => {
           messageType: data.messageType
         });
         socket.to(data.room).emit('receive_message', data);
+        
+        // Create Notification for Recipient
+        const Notification = require('./models/Notification');
+        await Notification.create({
+            recipient: data.recipient,
+            sender: data.sender,
+            type: 'message', 
+            message: `New message from ${data.senderName || 'user'}`, // Ideally sender name should be passed in data
+            link: `/chat/${data.sender}`
+        });
+        
+        // Emit 'notification' event to the recipient so the bell rings
+        io.to(data.recipient).emit('notification', {
+            type: 'message',
+            message: `New message`
+        });
       } catch (error) {
         console.error('Error saving message:', error);
       }
@@ -136,5 +220,3 @@ const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-//
-// server restart trigger

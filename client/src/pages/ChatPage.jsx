@@ -10,12 +10,13 @@ import VideoCallModal from '../components/VideoCallModal';
 
 import { API_URL, SOCKET_URL, BASE_URL } from '../config';
 
-const ENDPOINT = SOCKET_URL;
+// Endpoint handled in Context now
+// const ENDPOINT = SOCKET_URL;
 
 const ChatPage = () => {
   const { userId } = useParams();
   const { user } = useContext(AuthContext);
-  const { onlineUsers } = useSocket();
+  const { socket, onlineUsers } = useSocket();
   const navigate = useNavigate();
   
   // Chat State
@@ -64,24 +65,26 @@ const ChatPage = () => {
     };
     if (userId) fetchData();
 
-    // 2. Socket Setup
-    socketRef.current = io(ENDPOINT);
-    socketRef.current.emit('join_room', user._id);
+    // 2. Socket Listeners
+    if (!socket) return;
     
     // Message Listener
-    socketRef.current.on('receive_message', (message) => {
+    // Note: We need a named function to remove it on cleanup to avoid duplicates if re-renders happen
+    const handleReceiveMessage = (message) => {
        if (message.sender === userId || message.recipient === userId) {
           setMessages((prev) => [...prev, message]);
        }
-    });
+    };
+
+    socket.on('receive_message', handleReceiveMessage);
 
     // --- WebRTC Signaling Listeners ---
-    socketRef.current.on('callUser', ({ from, name: callerName, signal, callType }) => {
+    socket.on('callUser', ({ from, name: callerName, signal, callType }) => {
        setIncomingCall({ isReceivingCall: true, from, name: callerName, signal, callType });
        setCallActive(true); 
     });
 
-    socketRef.current.on('callAccepted', async (signal) => {
+    socket.on('callAccepted', async (signal) => {
         setCallAccepted(true);
         if (peerConnectionRef.current) {
             await peerConnectionRef.current.setRemoteDescription(new RTCSessionDescription(signal));
@@ -92,15 +95,18 @@ const ChatPage = () => {
         }
     });
 
-    socketRef.current.on('callEnded', () => {
+    socket.on('callEnded', () => {
         leaveCall(false); // don't emit endCall again
     });
 
     return () => {
-      socketRef.current.disconnect();
+      socket.off('receive_message', handleReceiveMessage);
+      socket.off('callUser');
+      socket.off('callAccepted');
+      socket.off('callEnded');
       if(stream) stream.getTracks().forEach(track => track.stop());
     };
-  }, [userId, user._id]);
+  }, [userId, user._id, socket]);
 
   // --- WebRTC Implementation (Native) ---
   const [iceServers, setIceServers] = useState([
@@ -135,7 +141,7 @@ const ChatPage = () => {
 
       pc.onicecandidate = (event) => {
           if (event.candidate) {
-             socketRef.current.emit('iceCandidate', { 
+              socket.emit('iceCandidate', { 
                  to: incomingCall ? incomingCall.from : userId, 
                  candidate: event.candidate 
              });
@@ -179,8 +185,8 @@ const ChatPage = () => {
       };
 
       // Remove any existing listener to avoid duplicates
-      socketRef.current.off('iceCandidate');
-      socketRef.current.on('iceCandidate', handleBeforeIce);
+      socket.off('iceCandidate');
+      socket.on('iceCandidate', handleBeforeIce);
 
       return pc;
   };
@@ -223,7 +229,7 @@ const ChatPage = () => {
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
 
-      socketRef.current.emit('callUser', {
+      socket.emit('callUser', {
           userToCall: userId,
           signalData: offer,
           from: user._id,
@@ -253,7 +259,7 @@ const ChatPage = () => {
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
 
-      socketRef.current.emit('answerCall', {
+      socket.emit('answerCall', {
           signal: answer,
           to: incomingCall.from
       });
@@ -276,7 +282,7 @@ const ChatPage = () => {
       }
 
       if (emitEvent) {
-          socketRef.current.emit('endCall', { to: incomingCall ? incomingCall.from : userId });
+          socket.emit('endCall', { to: incomingCall ? incomingCall.from : userId });
       }
   };
 
@@ -330,11 +336,12 @@ const ChatPage = () => {
       fileUrl: fileUrl,
       messageType: messageType,
       room: userId,
+      senderName: user.name, // Added senderName
       createdAt: new Date().toISOString()
     };
 
     setMessages((prev) => [...prev, messageData]);
-    socketRef.current.emit('send_message', messageData);
+    socket.emit('send_message', messageData);
     
     setNewMessage('');
     setSelectedFile(null);

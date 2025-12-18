@@ -8,6 +8,7 @@ import ExpertList from './pages/ExpertList';
 import ExpertProfile from './pages/ExpertProfile';
 import ChatPage from './pages/ChatPage';
 import ProfilePage from './pages/ProfilePage';
+import ExpertPayments from './pages/ExpertPayments';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import About from './pages/About';
@@ -29,10 +30,13 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminExperts from './pages/admin/AdminExperts';
 import AdminInquiries from './pages/admin/AdminInquiries';
+import AdminCoupons from './pages/admin/AdminCoupons';
+import AdminVerification from './pages/admin/AdminVerification';
 
 import ScrollToTop from './components/ScrollToTop';
 
 import { SocketProvider } from './context/SocketContext';
+import { Toaster } from 'react-hot-toast';
 
 function App() {
   const location = useLocation();
@@ -41,6 +45,7 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 dark:text-gray-100 transition-colors duration-300 flex flex-col">
       <SocketProvider>
+       <Toaster position="top-center" />
        <ScrollToTop />
        <Navbar />
       <div className={`${isFullWidthNode ? '' : 'container mx-auto px-4 py-8'} flex-grow`}>
@@ -64,6 +69,12 @@ function App() {
           <Route path="/experts" element={<ExpertList />} />
           <Route path="/experts/:id" element={<ExpertProfile />} />
           
+          <Route path="/expert/payments" element={
+            <ProtectedRoute>
+              <ExpertPayments />
+            </ProtectedRoute>
+          } />
+
           <Route path="/dashboard" element={
             <ProtectedRoute>
               <Dashboard />
@@ -103,6 +114,16 @@ function App() {
             <Route path="experts" element={
               <ProtectedRoute allowedRoles={['admin', 'moderator']}>
                 <AdminExperts />
+              </ProtectedRoute>
+            } />
+            <Route path="coupons" element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminCoupons />
+              </ProtectedRoute>
+            } />
+            <Route path="verifications" element={
+              <ProtectedRoute allowedRoles={['admin', 'moderator']}>
+                <AdminVerification />
               </ProtectedRoute>
             } />
           </Route>
