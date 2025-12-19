@@ -3,7 +3,7 @@
 
 const hostname = window.location.hostname;
 const isLocal = hostname === 'localhost' || hostname === '127.0.0.1';
-const API_URL = import.meta.env.VITE_API_BASE_URL || (isLocal ? 'http://localhost:5000/api' : 'https://vanilla-kart-etp.onrender.com/api');
+const API_URL = import.meta.env.VITE_API_BASE_URL || (isLocal ? 'http://localhost:5000/api' : 'https://consultpro-backend-4344983db754.herokuapp.com/api');
 
 // Derived URLs
 // Assumes API_URL ends with /api, we strip it for the root domain (Socket & Static assets)
