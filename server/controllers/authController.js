@@ -476,6 +476,7 @@ module.exports = {
   forgotPassword,
   resetPassword,
   getUserById,
+  getUserProfile,
   uploadProfilePhoto,
   uploadCoverPhoto,
   googleLogin,

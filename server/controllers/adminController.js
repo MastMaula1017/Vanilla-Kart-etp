@@ -314,7 +314,82 @@ const updateVerificationStatus = async (req, res) => {
       const updatedUser = await user.save();
       res.json(updatedUser);
     } else {
-      res.status(404).json({ message: 'User not found or not an expert' });
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Revoke expert role
+// @route   PUT /api/admin/users/:id/revoke-expert
+// @access  Private/Admin/Moderator
+const revokeExpertRole = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+
+    if (user) {
+      // Check permissions: Moderator cannot modify Admin/Moderator
+      const isModerator = req.user.roles.includes('moderator') && !req.user.roles.includes('admin');
+      const targetIsAdminOrMod = user.roles.includes('admin') || user.roles.includes('moderator');
+      
+      if (isModerator && targetIsAdminOrMod) {
+          return res.status(403).json({ message: 'Moderators cannot modify Admins or Moderators' });
+      }
+
+      user.roles = user.roles.filter(role => role !== 'expert');
+      
+      // If user has no roles left, maybe default to customer?
+      if (!user.roles.includes('customer')) {
+          user.roles.push('customer');
+      }
+
+      const updatedUser = await user.save();
+      res.json(updatedUser);
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Grant expert role
+// @route   PUT /api/admin/users/:id/grant-expert
+// @access  Private/Admin/Moderator
+const grantExpertRole = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+
+    if (user) {
+      // Check permissions: Moderator cannot modify Admin/Moderator
+      const isModerator = req.user.roles.includes('moderator') && !req.user.roles.includes('admin');
+      const targetIsAdminOrMod = user.roles.includes('admin') || user.roles.includes('moderator');
+      
+      if (isModerator && targetIsAdminOrMod) {
+          return res.status(403).json({ message: 'Moderators cannot modify Admins or Moderators' });
+      }
+
+      if (!user.roles.includes('expert')) {
+          user.roles.push('expert');
+          
+          // Initialize expert profile if missing
+          if (!user.expertProfile) {
+              user.expertProfile = {
+                  specialization: 'General', // Default
+                  hourlyRate: 0,
+                  bio: 'New expert.',
+                  verificationStatus: 'pending',
+                  averageRating: 0,
+                  totalReviews: 0
+              };
+          }
+      }
+
+      const updatedUser = await user.save();
+      res.json(updatedUser);
+    } else {
+      res.status(404).json({ message: 'User not found' });
     }
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -332,6 +407,7 @@ module.exports = {
   updateUserRoles,
   getMonthlyStats,
   getVerificationRequests,
-  updateVerificationStatus
+  updateVerificationStatus,
+  revokeExpertRole,
+  grantExpertRole
 };
-

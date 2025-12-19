@@ -32,6 +32,7 @@ import AdminExperts from './pages/admin/AdminExperts';
 import AdminInquiries from './pages/admin/AdminInquiries';
 import AdminCoupons from './pages/admin/AdminCoupons';
 import AdminVerification from './pages/admin/AdminVerification';
+import AdminAnnouncements from './pages/admin/AdminAnnouncements';
 
 import ScrollToTop from './components/ScrollToTop';
 
@@ -124,6 +125,11 @@ function App() {
             <Route path="verifications" element={
               <ProtectedRoute allowedRoles={['admin', 'moderator']}>
                 <AdminVerification />
+              </ProtectedRoute>
+            } />
+            <Route path="announcements" element={
+              <ProtectedRoute allowedRoles={['admin', 'moderator']}>
+                <AdminAnnouncements />
               </ProtectedRoute>
             } />
           </Route>

@@ -8,7 +8,8 @@ import {
 
   ChevronRight,
   Tag,
-  CheckCircle
+  CheckCircle,
+  Bell
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -30,6 +31,7 @@ const AdminLayout = () => {
     { name: 'Users', path: '/admin/users', icon: Users, roles: ['admin', 'moderator'] },
     { name: 'Experts', path: '/admin/experts', icon: Briefcase, roles: ['admin', 'moderator'] },
     { name: 'Inquiries', path: '/admin/inquiries', icon: MessageSquare, roles: ['admin', 'inquiry_support', 'moderator'] },
+    { name: 'Announcements', path: '/admin/announcements', icon: Bell, roles: ['admin', 'moderator'] },
     { name: 'Coupons', path: '/admin/coupons', icon: Tag, roles: ['admin'] },
     { name: 'Verifications', path: '/admin/verifications', icon: CheckCircle, roles: ['admin', 'moderator'] },
   ];

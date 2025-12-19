@@ -12,7 +12,9 @@ const {
   updateUserRoles,
   getMonthlyStats,
   getVerificationRequests,
-  updateVerificationStatus
+  updateVerificationStatus,
+  revokeExpertRole,
+  grantExpertRole
 } = require('../controllers/adminController');
 
 // All routes are protected and require 'admin' role
@@ -29,6 +31,8 @@ router.get('/experts', authorize('admin', 'moderator'), getAllExperts);
 router.route('/users/:id')
     .delete(authorize('admin'), deleteUser);
 router.put('/users/:id/roles', authorize('admin', 'moderator'), updateUserRoles);
+router.put('/users/:id/revoke-expert', authorize('admin', 'moderator'), revokeExpertRole);
+router.put('/users/:id/grant-expert', authorize('admin', 'moderator'), grantExpertRole);
 
 // Inquiries (Admin, Inquiry Support & Moderator)
 router.get('/inquiries', authorize('admin', 'inquiry_support', 'moderator'), getAllInquiries);

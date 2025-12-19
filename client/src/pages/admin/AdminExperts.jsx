@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from '../../utils/axios';
-import { useAuth } from '../../context/AuthContext';import { Trash2, Briefcase, Search, Star } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';import { Trash2, Briefcase, Search, Star, UserMinus } from 'lucide-react';
 
 const AdminExperts = () => {
   const { user: currentUser } = useAuth();
@@ -31,6 +31,20 @@ const AdminExperts = () => {
       } catch (error) {
         console.error("Error deleting expert:", error);
         alert('Failed to delete expert');
+      }
+    }
+  };
+
+  const handleRevokeRole = async (id, name) => {
+    if (window.confirm(`Are you sure you want to revoke 'Expert' status from ${name}? They will become a regular customer.`)) {
+      try {
+        await axios.put(`/admin/users/${id}/revoke-expert`);
+        // Remove from list as they are no longer an expert
+        setExperts(experts.filter(expert => expert._id !== id));
+        alert(`Expert status revoked for ${name}`);
+      } catch (error) {
+        console.error("Error revoking role:", error);
+        alert(error.response?.data?.message || 'Failed to revoke expert role');
       }
     }
   };
@@ -112,9 +126,18 @@ const AdminExperts = () => {
                         <button 
                             onClick={() => handleDelete(expert._id)}
                             className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                            title="Delete Expert"
+                            title="Delete User"
                         >
                             <Trash2 size={18} />
+                        </button>
+                    )}
+                    {(currentUser?.roles?.includes('admin') || currentUser?.roles?.includes('moderator')) && (
+                        <button 
+                            onClick={() => handleRevokeRole(expert._id, expert.name)}
+                            className="p-2 text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-lg transition-colors"
+                            title="Revoke Expert Status"
+                        >
+                            <UserMinus size={18} />
                         </button>
                     )}
                   </td>

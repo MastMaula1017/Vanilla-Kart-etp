@@ -11,13 +11,48 @@ const NotificationDropdown = () => {
   const dropdownRef = useRef(null);
 
   const fetchNotifications = async () => {
+    let newNotifications = [];
+    let newAnnouncements = [];
+    
+    // 1. Fetch Notifications
     try {
-      const { data } = await axios.get('/notifications');
-      setNotifications(data.notifications);
-      setUnreadCount(data.unreadCount);
+        const { data } = await axios.get('/notifications');
+        newNotifications = data.notifications || [];
     } catch (error) {
-      console.error('Failed to fetch notifications', error);
+        console.error('Failed to fetch notifications', error);
     }
+
+    // 2. Fetch Announcements
+    try {
+        const { data } = await axios.get('/announcements');
+        newAnnouncements = data || [];
+    } catch (error) {
+        console.error('Failed to fetch announcements', error);
+    }
+
+    // 3. Process Announcements
+    const readAnnouncements = JSON.parse(localStorage.getItem('read_announcements') || '[]');
+    
+    const formattedAnnouncements = newAnnouncements.map(ann => ({
+        _id: ann._id,
+        message: `${ann.title}: ${ann.message}`,
+        type: 'announcement', 
+        announcementType: ann.type,
+        createdAt: ann.createdAt,
+        isRead: readAnnouncements.includes(ann._id),
+        link: '#' 
+    }));
+
+    // 4. Merge and Sort
+    const combined = [...newNotifications, ...formattedAnnouncements].sort((a, b) => 
+        new Date(b.createdAt) - new Date(a.createdAt)
+    );
+
+    setNotifications(combined);
+    
+    const unreadNotifs = newNotifications.filter(n => !n.isRead).length;
+    const unreadAnnounce = formattedAnnouncements.filter(a => !a.isRead).length;
+    setUnreadCount(unreadNotifs + unreadAnnounce);
   };
 
   useEffect(() => {
@@ -45,19 +80,40 @@ const NotificationDropdown = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleMarkAsRead = async (id) => {
-    try {
-      await axios.put(`/notifications/${id}/read`);
-      setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
-      setUnreadCount(prev => Math.max(0, prev - 1));
-    } catch (error) {
-      console.error('Failed to mark as read', error);
+  const handleMarkAsRead = async (id, type) => {
+    if (type === 'announcement') {
+        const readAnnouncements = JSON.parse(localStorage.getItem('read_announcements') || '[]');
+        if (!readAnnouncements.includes(id)) {
+            const updated = [...readAnnouncements, id];
+            localStorage.setItem('read_announcements', JSON.stringify(updated));
+            setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
+            setUnreadCount(prev => Math.max(0, prev - 1));
+        }
+    } else {
+        try {
+            await axios.put(`/notifications/${id}/read`);
+            setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
+            setUnreadCount(prev => Math.max(0, prev - 1));
+        } catch (error) {
+            console.error('Failed to mark as read', error);
+        }
     }
   };
 
   const markAllRead = async () => {
       try {
+          // Mark server notifications
           await axios.put('/notifications/read-all');
+          
+          // Mark local announcements
+          const allAnnouncements = notifications
+              .filter(n => n.type === 'announcement')
+              .map(n => n._id);
+          
+          const existingRead = JSON.parse(localStorage.getItem('read_announcements') || '[]');
+          const newRead = [...new Set([...existingRead, ...allAnnouncements])];
+          localStorage.setItem('read_announcements', JSON.stringify(newRead));
+
           setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
           setUnreadCount(0);
       } catch (error) {
@@ -68,7 +124,10 @@ const NotificationDropdown = () => {
   return (
     <div className="relative" ref={dropdownRef}>
       <button 
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+            fetchNotifications();
+            setIsOpen(!isOpen);
+        }}
         className="relative p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
       >
         <Bell size={20} />
@@ -99,27 +158,49 @@ const NotificationDropdown = () => {
                 {notifications.map((notification) => (
                   <div 
                     key={notification._id} 
-                    className={`p-4 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors ${!notification.isRead ? 'bg-violet-50/50 dark:bg-violet-900/10' : ''}`}
+                    className={`p-4 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors ${
+                        !notification.isRead 
+                            ? notification.type === 'announcement'
+                                ? 'bg-blue-50/50 dark:bg-blue-900/10'
+                                : 'bg-violet-50/50 dark:bg-violet-900/10' 
+                            : ''
+                    } ${notification.type === 'announcement' ? 'border-l-4 border-blue-500 pl-3' : ''}`}
                   >
                     <div className="flex justify-between items-start gap-3">
-                        <Link 
-                            to={notification.link || '#'} 
+                        <div 
+                            className="flex-1 cursor-pointer"
                             onClick={() => {
-                                setIsOpen(false);
-                                if(!notification.isRead) handleMarkAsRead(notification._id);
+                                // Only close if it's a link or just marking as read
+                                if(!notification.isRead) handleMarkAsRead(notification._id, notification.type);
+                                if(notification.link !== '#') {
+                                    setIsOpen(false);
+                                    // Navigate if needed, but Link component handles it usually. 
+                                    // Since we changed Link to div for click handling, we might need manual navigate or use Link wrapping content.
+                                }
                             }}
-                            className="flex-1"
                         >
+                             {notification.type === 'announcement' && (
+                                <span className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded mb-1 inline-block ${
+                                    notification.announcementType === 'critical' ? 'bg-red-100 text-red-600' :
+                                    notification.announcementType === 'warning' ? 'bg-yellow-100 text-yellow-600' :
+                                    'bg-blue-100 text-blue-600'
+                                }`}>
+                                    Announcement
+                                </span>
+                             )}
                             <p className="text-sm text-gray-800 dark:text-gray-200 mb-1">
                                 {notification.message}
                             </p>
                             <span className="text-xs text-gray-400">
                                 {moment(notification.createdAt).fromNow()}
                             </span>
-                        </Link>
+                        </div>
                         {!notification.isRead && (
                             <button 
-                                onClick={() => handleMarkAsRead(notification._id)}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleMarkAsRead(notification._id, notification.type);
+                                }}
                                 className="text-violet-400 hover:text-violet-600"
                                 title="Mark as read"
                             >

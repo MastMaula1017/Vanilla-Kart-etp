@@ -18,9 +18,10 @@ const userSchema = new mongoose.Schema({
     bio: { type: String },
     hourlyRate: { type: Number },
     availability: [{
-      day: { type: String }, // e.g., "Monday"
-      startTime: { type: String }, // e.g., "09:00"
-      endTime: { type: String }   // e.g., "17:00"
+      day: { type: String, enum: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] },
+      startTime: { type: String }, // "09:00"
+      endTime: { type: String },   // "17:00"
+      isActive: { type: Boolean, default: true }
     }],
     verificationStatus: { 
       type: String, 
@@ -28,7 +29,9 @@ const userSchema = new mongoose.Schema({
       default: 'unverified' 
     },
     verificationDocuments: [{ type: String }],
-    badges: [{ type: String }] // e.g., "Top Rated", "Verified"
+    badges: [{ type: String }], // e.g., "Top Rated", "Verified"
+    averageRating: { type: Number, default: 0 },
+    totalReviews: { type: Number, default: 0 }
   },
   resetPasswordOtp: String,
   resetPasswordOtpExpire: Date,

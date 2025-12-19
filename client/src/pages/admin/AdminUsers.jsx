@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from '../../utils/axios';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
-import { Trash2, User, Search, Shield, ShieldOff, Headset, Circle } from 'lucide-react';
+import { Trash2, User, Search, Shield, ShieldOff, Headset, Circle, UserPlus, UserMinus } from 'lucide-react';
 
 const AdminUsers = () => {
   const { user: currentUser } = useAuth();
@@ -103,6 +103,28 @@ const AdminUsers = () => {
         } catch (error) {
             console.error("Error updating roles:", error);
             alert("Failed to update roles.");
+        }
+    }
+  };
+
+  const handleToggleExpert = async (user) => {
+    const isExpert = user.roles.includes('expert');
+    const action = isExpert ? 'Revoke Expert' : 'Make Expert';
+    
+    if (window.confirm(`Are you sure you want to ${action.toLowerCase()} role for ${user.name}?${!isExpert ? ' They will appear in the Experts list.' : ''}`)) {
+        try {
+            if (isExpert) {
+                await axios.put(`/admin/users/${user._id}/revoke-expert`);
+                setUsers(users.map(u => u._id === user._id ? { ...u, roles: u.roles.filter(r => r !== 'expert') } : u));
+                alert(`Expert status revoked for ${user.name}`);
+            } else {
+                const { data } = await axios.put(`/admin/users/${user._id}/grant-expert`);
+                setUsers(users.map(u => u._id === user._id ? { ...u, roles: data.roles } : u));
+                alert(`User ${user.name} is now an Expert.`);
+            }
+        } catch (error) {
+            console.error("Error updating expert role:", error);
+            alert(error.response?.data?.message || `Failed to ${action.toLowerCase()}`);
         }
     }
   };
@@ -228,6 +250,22 @@ const AdminUsers = () => {
                             title={user.roles?.includes('inquiry_support') ? "Remove Inquiry Support" : "Make Inquiry Support"}
                         >
                             <Headset size={18} />
+                        </button>
+                    )}
+
+                    {/* Admins and Moderators can Toggle Expert Status */}
+                    {((currentUser?.roles?.includes('admin')) || 
+                      (currentUser?.roles?.includes('moderator') && !user.roles.includes('admin') && !user.roles.includes('moderator'))) && (
+                        <button 
+                            onClick={() => handleToggleExpert(user)}
+                            className={`p-2 rounded-lg transition-colors ${
+                                user.roles?.includes('expert')
+                                ? 'text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20'
+                                : 'text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20'
+                            }`}
+                            title={user.roles?.includes('expert') ? "Revoke Expert Status" : "Make Expert"}
+                        >
+                            {user.roles?.includes('expert') ? <UserMinus size={18} /> : <UserPlus size={18} />}
                         </button>
                     )}
 

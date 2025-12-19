@@ -7,6 +7,26 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const refreshUser = async () => {
+    try {
+      const { data } = await axios.get('/auth/profile');
+      
+      // We need to get the token, which updateProfile doesn't always return, but we have it in storage
+      const token = axios.defaults.headers.common['Authorization']?.split(' ')[1];
+      const updatedUser = { ...data, token };
+
+      setUser(updatedUser);
+      
+      if (localStorage.getItem('userInfo')) {
+          localStorage.setItem('userInfo', JSON.stringify(updatedUser));
+      } else {
+          sessionStorage.setItem('userInfo', JSON.stringify(updatedUser));
+      }
+    } catch (error) {
+       console.error("Silent refresh failed", error);
+    }
+  };
+
   useEffect(() => {
     // Check localStorage first, then sessionStorage
     const userInfo = JSON.parse(localStorage.getItem('userInfo')) || JSON.parse(sessionStorage.getItem('userInfo'));
@@ -15,6 +35,9 @@ export const AuthProvider = ({ children }) => {
       setUser(userInfo);
       // Set auth token header
       axios.defaults.headers.common['Authorization'] = `Bearer ${userInfo.token}`;
+      
+      // Trigger a silent refresh to get latest roles
+      refreshUser();
     }
     setLoading(false);
   }, []);
@@ -93,6 +116,8 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+
+
   const googleLogin = async (credential, additionalData = {}) => {
     try {
       const { data } = await axios.post('/auth/google', { credential, ...additionalData });
@@ -106,7 +131,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, googleLogin, loading, updateUser, forgotPassword, resetPassword }}>
+    <AuthContext.Provider value={{ user, login, register, logout, googleLogin, loading, updateUser, forgotPassword, resetPassword, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

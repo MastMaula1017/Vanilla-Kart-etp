@@ -57,7 +57,7 @@ const GetTheApp = () => {
 
                         <div className="flex flex-col sm:flex-row gap-4 pt-4">
                             <a
-                                href="https://apps.apple.com/us/app/grok/id6670324846"
+                                href="#"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 onMouseEnter={handleAppleHover}
@@ -74,7 +74,7 @@ const GetTheApp = () => {
                             </a>
 
                             <a
-                                href="https://play.google.com/store/apps/details?id=ai.x.grok&hl=en"
+                                href="#"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 onMouseEnter={handleGoogleHover}

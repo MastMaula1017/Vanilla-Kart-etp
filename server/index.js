@@ -18,7 +18,7 @@ const path = require('path');
 
 // Middleware
 app.use(cors({
-  origin: ["https://joyful-gaufre-719afc.netlify.app", "http://localhost:5173", "http://localhost:5175", "http://consultpro.vanshraturi.me", "https://consultpro.vanshraturi.me"],
+  origin: ["https://joyful-gaufre-719afc.netlify.app", "http://localhost:5173", "http://localhost:5174", "http://localhost:5175", "http://consultpro.vanshraturi.me", "https://consultpro.vanshraturi.me"],
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 }));
@@ -39,6 +39,7 @@ app.use('/api/turn', require('./routes/turnRoutes'));
 app.use('/api/payment', require('./routes/paymentRoutes'));
 app.use('/api/coupons', require('./routes/couponRoutes'));
 app.use('/api/notifications', require('./routes/notificationRoutes'));
+app.use('/api/announcements', require('./routes/announcementRoutes'));
 
 // Cron Job for Appointment Reminders (Every minute)
 const cron = require('node-cron');
@@ -105,7 +106,7 @@ cron.schedule('* * * * *', async () => {
 
 const io = new Server(server, {
   cors: {
-    origin: ["https://joyful-gaufre-719afc.netlify.app", "http://localhost:5173", "http://localhost:5175", "http://consultpro.vanshraturi.me", "https://consultpro.vanshraturi.me"],
+    origin: ["https://joyful-gaufre-719afc.netlify.app", "http://localhost:5173", "http://localhost:5174", "http://localhost:5175", "http://consultpro.vanshraturi.me", "https://consultpro.vanshraturi.me"],
     methods: ["GET", "POST"],
     credentials: true
   }

@@ -1,7 +1,7 @@
 import { useState, useContext, useEffect } from 'react';
 import axios from '../utils/axios';
 import AuthContext from '../context/AuthContext';
-import { User, Mail, Lock, Save, AlertCircle, CheckCircle, Shield, Briefcase, IndianRupee, FileText, Loader } from 'lucide-react';
+import { User, Mail, Lock, Save, AlertCircle, CheckCircle, Shield, Briefcase, IndianRupee, FileText, Loader, Clock } from 'lucide-react';
 
 const ProfilePage = () => {
   const { user, updateUser } = useContext(AuthContext);
@@ -16,6 +16,15 @@ const ProfilePage = () => {
     specialization: user?.expertProfile?.specialization || '',
     hourlyRate: user?.expertProfile?.hourlyRate || '',
     bio: user?.expertProfile?.bio || '',
+    availability: user?.expertProfile?.availability?.length > 0 ? user.expertProfile.availability : [
+        { day: 'Monday', startTime: '09:00', endTime: '17:00', isActive: true },
+        { day: 'Tuesday', startTime: '09:00', endTime: '17:00', isActive: true },
+        { day: 'Wednesday', startTime: '09:00', endTime: '17:00', isActive: true },
+        { day: 'Thursday', startTime: '09:00', endTime: '17:00', isActive: true },
+        { day: 'Friday', startTime: '09:00', endTime: '17:00', isActive: true },
+        { day: 'Saturday', startTime: '10:00', endTime: '14:00', isActive: false },
+        { day: 'Sunday', startTime: '10:00', endTime: '14:00', isActive: false },
+    ],
     // Password fields
     currentPassword: '',
     newPassword: '',
@@ -30,7 +39,8 @@ const ProfilePage = () => {
             email: user.email,
             specialization: user.expertProfile?.specialization || '',
             hourlyRate: user.expertProfile?.hourlyRate || '',
-            bio: user.expertProfile?.bio || ''
+            bio: user.expertProfile?.bio || '',
+            availability: user.expertProfile?.availability?.length > 0 ? user.expertProfile.availability : formData.availability
         }));
     }
   }, [user]);
@@ -38,6 +48,12 @@ const ProfilePage = () => {
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     if(message) setMessage(null);
+  };
+
+  const handleAvailabilityChange = (index, field, value) => {
+    const newAvailability = [...formData.availability];
+    newAvailability[index][field] = value;
+    setFormData({ ...formData, availability: newAvailability });
   };
 
   const handleUpdateProfile = async (e) => {
@@ -51,7 +67,8 @@ const ProfilePage = () => {
         expertProfile: user.roles?.includes('expert') ? {
             specialization: formData.specialization,
             hourlyRate: formData.hourlyRate,
-            bio: formData.bio
+            bio: formData.bio,
+            availability: formData.availability
         } : undefined
       });
       
@@ -126,17 +143,30 @@ const ProfilePage = () => {
                 <span>Security</span>
             </button>
             {user?.roles?.includes('expert') && (
-                <button 
-                    onClick={() => setActiveTab('verification')}
-                    className={`w-full text-left px-4 py-3 rounded-xl flex items-center space-x-3 transition-all font-medium ${
-                        activeTab === 'verification' 
-                        ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/30' 
-                        : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'
-                    }`}
-                >
-                    <CheckCircle size={18} />
-                    <span>Verification</span>
-                </button>
+                <>
+                    <button 
+                        onClick={() => setActiveTab('availability')}
+                        className={`w-full text-left px-4 py-3 rounded-xl flex items-center space-x-3 transition-all font-medium ${
+                            activeTab === 'availability' 
+                            ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/30' 
+                            : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'
+                        }`}
+                    >
+                        <Clock size={18} />
+                        <span>Availability</span>
+                    </button>
+                    <button 
+                        onClick={() => setActiveTab('verification')}
+                        className={`w-full text-left px-4 py-3 rounded-xl flex items-center space-x-3 transition-all font-medium ${
+                            activeTab === 'verification' 
+                            ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/30' 
+                            : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'
+                        }`}
+                    >
+                        <CheckCircle size={18} />
+                        <span>Verification</span>
+                    </button>
+                </>
             )}
         </div>
 
@@ -459,6 +489,65 @@ const ProfilePage = () => {
                                     </div>
                                 )}
                              </div>
+                        </div>
+
+                    ) : activeTab === 'availability' ? (
+                        <div className="space-y-8">
+                            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
+                                <Clock className="mr-2 text-violet-500" size={24} />
+                                Weekly Availability
+                            </h2>
+
+                            <form onSubmit={handleUpdateProfile} className="space-y-6">
+                                <div className="space-y-4">
+                                    {formData.availability.map((slot, index) => (
+                                        <div key={slot.day} className="flex flex-col sm:flex-row sm:items-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl border border-gray-100 dark:border-gray-700 gap-4">
+                                            <div className="w-32 flex items-center space-x-3">
+                                                <input 
+                                                    type="checkbox" 
+                                                    checked={slot.isActive}
+                                                    onChange={(e) => handleAvailabilityChange(index, 'isActive', e.target.checked)}
+                                                    className="w-5 h-5 rounded border-gray-300 text-violet-600 focus:ring-violet-500 cursor-pointer"
+                                                />
+                                                <span className={`font-medium ${slot.isActive ? 'text-gray-900 dark:text-white' : 'text-gray-400'}`}>
+                                                    {slot.day}
+                                                </span>
+                                            </div>
+                                            
+                                            <div className="flex items-center gap-4 flex-1">
+                                                <div className="flex-1">
+                                                    <input 
+                                                        type="time" 
+                                                        value={slot.startTime}
+                                                        onChange={(e) => handleAvailabilityChange(index, 'startTime', e.target.value)}
+                                                        disabled={!slot.isActive}
+                                                        className="w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-violet-500 disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 dark:text-white"
+                                                    />
+                                                </div>
+                                                <span className="text-gray-400">to</span>
+                                                <div className="flex-1">
+                                                    <input 
+                                                        type="time" 
+                                                        value={slot.endTime}
+                                                        onChange={(e) => handleAvailabilityChange(index, 'endTime', e.target.value)}
+                                                        disabled={!slot.isActive}
+                                                        className="w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-violet-500 disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 dark:text-white"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="flex justify-end pt-4">
+                                    <button 
+                                        type="submit" 
+                                        disabled={loading}
+                                        className="px-8 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold rounded-xl shadow-lg hover:shadow-violet-500/30 hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:transform-none flex items-center"
+                                    >
+                                        {loading ? 'Saving...' : 'Save Availability'}
+                                    </button>
+                                </div>
+                            </form>
                         </div>
                     ) : (
                         <form onSubmit={handleChangePassword} className="space-y-6">

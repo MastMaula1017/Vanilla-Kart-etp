@@ -50,7 +50,7 @@ const createAppointment = async (req, res) => {
           amount: payment.amount,
           status: 'captured'
       } : undefined,
-      status: payment ? 'confirmed' : 'pending' // Auto-confirm if paid
+      status: 'pending' // Expert must manually approve even if paid
     });
 
     // Create Notification for the Expert

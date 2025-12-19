@@ -5,7 +5,56 @@ const User = require('../models/User');
 // @access  Public
 const getExperts = async (req, res) => {
   try {
-    const experts = await User.find({ roles: 'expert' }).select('-password');
+    const { search, minPrice, maxPrice, specialization, rating, day } = req.query;
+
+    const query = { roles: 'expert' };
+
+    // Search (Name or Bio or Specialization)
+    if (search) {
+      const searchRegex = new RegExp(search, 'i');
+      query.$or = [
+        { name: searchRegex },
+        { 'expertProfile.bio': searchRegex },
+        { 'expertProfile.specialization': searchRegex }
+      ];
+    }
+
+    // Specialization Filter
+    if (specialization) {
+      query['expertProfile.specialization'] = specialization;
+    }
+
+    // Price Filter
+    if (minPrice || maxPrice) {
+      query['expertProfile.hourlyRate'] = {};
+      if (minPrice) query['expertProfile.hourlyRate'].$gte = Number(minPrice);
+      if (maxPrice) query['expertProfile.hourlyRate'].$lte = Number(maxPrice);
+    }
+
+    // Availability Filter (Day)
+    if (day) {
+      query['expertProfile.availability'] = {
+        $elemMatch: {
+          day: day,
+          isActive: true
+        }
+      };
+    }
+
+    // Rating Filter
+    if (rating) {
+        query['expertProfile.averageRating'] = { $gte: Number(rating) };
+    }
+
+    let experts = await User.find(query).select('-password');
+
+    // Rating Filter (Client-side aggregation in simplified backend, or handled here if ratings stored on user)
+    // NOTE: For now, assuming reviews are separate. 
+    // Ideally we aggregate reviews. For simplicity, skipping strict DB rating filter unless we add avgRating to User model.
+    // If we want to filter by rating here, we'd need to fetch reviews or rely on a pre-calculated field.
+    // Let's assume for this MVP we filter after fetch OR just skip backend rating filter if complex.
+    // Actually, let's filter in memory if the dataset is small, or just ignore if not stored.
+    
     res.json(experts);
   } catch (error) {
     res.status(500).json({ message: error.message });

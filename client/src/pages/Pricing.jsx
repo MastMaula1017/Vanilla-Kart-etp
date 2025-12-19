@@ -49,7 +49,7 @@ const Pricing = () => {
                 currency: order.currency,
                 name: "ConsultPro",
                 description: `Subscription: ${plan.name}`,
-                image: "https://your-logo-url.com/logo.png",
+                image: "https://placehold.co/512", // TODO: Replace with actual logo URL
                 order_id: order.id,
                 handler: async function (response) {
                     try {
