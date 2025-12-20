@@ -3,6 +3,7 @@ import axios from '../../utils/axios';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
 import { Trash2, User, Search, Shield, ShieldOff, Headset, Circle, UserPlus, UserMinus } from 'lucide-react';
+import ConfirmationModal from '../../components/ConfirmationModal';
 
 const AdminUsers = () => {
   const { user: currentUser } = useAuth();
@@ -26,107 +27,161 @@ const AdminUsers = () => {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this user?')) {
-      try {
-        await axios.delete(`/admin/users/${id}`);
-        setUsers(users.filter(user => user._id !== id));
-      } catch (error) {
-        console.error("Error deleting user:", error);
-        alert('Failed to delete user');
-      }
-    }
+  /* Modal State */
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+    type: 'warning',
+    confirmText: 'Confirm'
+  });
+
+  const closeConfirmModal = () => {
+    setConfirmModal(prev => ({ ...prev, isOpen: false }));
   };
 
-  const handleToggleAdmin = async (user) => {
+  const handleDelete = (id) => {
+    setConfirmModal({
+        isOpen: true,
+        title: 'Delete User',
+        message: 'Are you sure you want to delete this user? This action cannot be undone.',
+        type: 'danger',
+        confirmText: 'Delete',
+        onConfirm: async () => {
+            try {
+                await axios.delete(`/admin/users/${id}`);
+                setUsers(users.filter(user => user._id !== id));
+                closeConfirmModal();
+            } catch (error) {
+                console.error("Error deleting user:", error);
+                alert('Failed to delete user');
+            }
+        }
+    });
+  };
+
+  const handleToggleAdmin = (user) => {
     const isAdmin = user.roles.includes('admin');
     const action = isAdmin ? 'Remove Admin' : 'Make Admin';
     
-    if (window.confirm(`Are you sure you want to ${action.toLowerCase()} role for ${user.name}?`)) {
-        try {
-            let newRoles;
-            if (isAdmin) {
-                newRoles = user.roles.filter(r => r !== 'admin');
-            } else {
-                newRoles = [...user.roles, 'admin'];
+    setConfirmModal({
+        isOpen: true,
+        title: `${action} Role`,
+        message: `Are you sure you want to ${action.toLowerCase()} role for ${user.name}?`,
+        type: isAdmin ? 'danger' : 'warning',
+        confirmText: action,
+        onConfirm: async () => {
+             try {
+                let newRoles;
+                if (isAdmin) {
+                    newRoles = user.roles.filter(r => r !== 'admin');
+                } else {
+                    newRoles = [...user.roles, 'admin'];
+                }
+                
+                const { data } = await axios.put(`/admin/users/${user._id}/roles`, { roles: newRoles });
+                setUsers(users.map(u => u._id === user._id ? { ...u, roles: data.roles } : u));
+                alert(`User ${isAdmin ? 'removed from' : 'promoted to'} admin successfully.`);
+                closeConfirmModal();
+            } catch (error) {
+                console.error("Error updating roles:", error);
+                alert("Failed to update roles.");
             }
-            
-            const { data } = await axios.put(`/admin/users/${user._id}/roles`, { roles: newRoles });
-            setUsers(users.map(u => u._id === user._id ? { ...u, roles: data.roles } : u));
-            alert(`User ${isAdmin ? 'removed from' : 'promoted to'} admin successfully.`);
-        } catch (error) {
-            console.error("Error updating roles:", error);
-            alert("Failed to update roles.");
         }
-    }
+    });
   };
 
-  const handleToggleModerator = async (user) => {
+  const handleToggleModerator = (user) => {
     const isModerator = user.roles.includes('moderator');
     const action = isModerator ? 'Remove Moderator' : 'Make Moderator';
     
-    if (window.confirm(`Are you sure you want to ${action.toLowerCase()} role for ${user.name}?`)) {
-        try {
-            let newRoles;
-            if (isModerator) {
-                newRoles = user.roles.filter(r => r !== 'moderator');
-            } else {
-                newRoles = [...user.roles, 'moderator'];
+    setConfirmModal({
+        isOpen: true,
+        title: `${action} Role`,
+        message: `Are you sure you want to ${action.toLowerCase()} role for ${user.name}?`,
+        type: isModerator ? 'danger' : 'warning',
+        confirmText: action,
+        onConfirm: async () => {
+             try {
+                let newRoles;
+                if (isModerator) {
+                    newRoles = user.roles.filter(r => r !== 'moderator');
+                } else {
+                    newRoles = [...user.roles, 'moderator'];
+                }
+                
+                const { data } = await axios.put(`/admin/users/${user._id}/roles`, { roles: newRoles });
+                setUsers(users.map(u => u._id === user._id ? { ...u, roles: data.roles } : u));
+                alert(`User ${isModerator ? 'removed from' : 'promoted to'} moderator successfully.`);
+                closeConfirmModal();
+            } catch (error) {
+                console.error("Error updating roles:", error);
+                alert("Failed to update roles.");
             }
-            
-            const { data } = await axios.put(`/admin/users/${user._id}/roles`, { roles: newRoles });
-            setUsers(users.map(u => u._id === user._id ? { ...u, roles: data.roles } : u));
-            alert(`User ${isModerator ? 'removed from' : 'promoted to'} moderator successfully.`);
-        } catch (error) {
-            console.error("Error updating roles:", error);
-            alert("Failed to update roles.");
         }
-    }
+    });
   };
 
-  const handleToggleSupport = async (user) => {
+  const handleToggleSupport = (user) => {
     const isSupport = user.roles.includes('inquiry_support');
     const action = isSupport ? 'Remove Support' : 'Make Support';
     
-    if (window.confirm(`Are you sure you want to ${action.toLowerCase()} role for ${user.name}?`)) {
-        try {
-            let newRoles;
-            if (isSupport) {
-                newRoles = user.roles.filter(r => r !== 'inquiry_support');
-            } else {
-                newRoles = [...user.roles, 'inquiry_support'];
+    setConfirmModal({
+        isOpen: true,
+        title: `${action} Role`,
+        message: `Are you sure you want to ${action.toLowerCase()} role for ${user.name}?`,
+        type: isSupport ? 'danger' : 'warning',
+        confirmText: action,
+        onConfirm: async () => {
+             try {
+                let newRoles;
+                if (isSupport) {
+                    newRoles = user.roles.filter(r => r !== 'inquiry_support');
+                } else {
+                    newRoles = [...user.roles, 'inquiry_support'];
+                }
+                
+                const { data } = await axios.put(`/admin/users/${user._id}/roles`, { roles: newRoles });
+                setUsers(users.map(u => u._id === user._id ? { ...u, roles: data.roles } : u));
+                alert(`User ${isSupport ? 'removed from' : 'assigned to'} Inquiry Support successfully.`);
+                closeConfirmModal();
+            } catch (error) {
+                console.error("Error updating roles:", error);
+                alert("Failed to update roles.");
             }
-            
-            const { data } = await axios.put(`/admin/users/${user._id}/roles`, { roles: newRoles });
-            setUsers(users.map(u => u._id === user._id ? { ...u, roles: data.roles } : u));
-            alert(`User ${isSupport ? 'removed from' : 'assigned to'} Inquiry Support successfully.`);
-        } catch (error) {
-            console.error("Error updating roles:", error);
-            alert("Failed to update roles.");
         }
-    }
+    });
   };
 
-  const handleToggleExpert = async (user) => {
+  const handleToggleExpert = (user) => {
     const isExpert = user.roles.includes('expert');
     const action = isExpert ? 'Revoke Expert' : 'Make Expert';
     
-    if (window.confirm(`Are you sure you want to ${action.toLowerCase()} role for ${user.name}?${!isExpert ? ' They will appear in the Experts list.' : ''}`)) {
-        try {
-            if (isExpert) {
-                await axios.put(`/admin/users/${user._id}/revoke-expert`);
-                setUsers(users.map(u => u._id === user._id ? { ...u, roles: u.roles.filter(r => r !== 'expert') } : u));
-                alert(`Expert status revoked for ${user.name}`);
-            } else {
-                const { data } = await axios.put(`/admin/users/${user._id}/grant-expert`);
-                setUsers(users.map(u => u._id === user._id ? { ...u, roles: data.roles } : u));
-                alert(`User ${user.name} is now an Expert.`);
+    setConfirmModal({
+        isOpen: true,
+        title: `${action} Role`,
+        message: `Are you sure you want to ${action.toLowerCase()} role for ${user.name}?${!isExpert ? ' They will appear in the Experts list.' : ''}`,
+        type: isExpert ? 'danger' : 'info',
+        confirmText: action,
+        onConfirm: async () => {
+            try {
+                if (isExpert) {
+                    await axios.put(`/admin/users/${user._id}/revoke-expert`);
+                    setUsers(users.map(u => u._id === user._id ? { ...u, roles: u.roles.filter(r => r !== 'expert') } : u));
+                    alert(`Expert status revoked for ${user.name}`);
+                } else {
+                    const { data } = await axios.put(`/admin/users/${user._id}/grant-expert`);
+                    setUsers(users.map(u => u._id === user._id ? { ...u, roles: data.roles } : u));
+                    alert(`User ${user.name} is now an Expert.`);
+                }
+                closeConfirmModal();
+            } catch (error) {
+                console.error("Error updating expert role:", error);
+                alert(error.response?.data?.message || `Failed to ${action.toLowerCase()}`);
             }
-        } catch (error) {
-            console.error("Error updating expert role:", error);
-            alert(error.response?.data?.message || `Failed to ${action.toLowerCase()}`);
         }
-    }
+    });
   };
 
   const filteredUsers = users.filter(user => 
@@ -294,6 +349,15 @@ const AdminUsers = () => {
           </table>
         </div>
       </div>
+      <ConfirmationModal 
+        isOpen={confirmModal.isOpen}
+        onClose={closeConfirmModal}
+        onConfirm={confirmModal.onConfirm}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        type={confirmModal.type}
+        confirmText={confirmModal.confirmText}
+      />
     </div>
   );
 };

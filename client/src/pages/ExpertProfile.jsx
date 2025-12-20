@@ -302,6 +302,179 @@ const ExpertProfile = () => {
     }
   };
 
+  const renderBookingCard = () => (
+    <div className="bg-white dark:bg-zinc-900/80 backdrop-blur-xl p-6 md:p-8 rounded-3xl border border-gray-100 dark:border-white/10 shadow-2xl">
+        <div className="flex items-baseline justify-between mb-8 pb-6 border-b border-gray-100 dark:border-white/10">
+            <div>
+                <span className="text-gray-500 dark:text-gray-400 text-sm font-medium uppercase tracking-wider">Hourly Rate</span>
+                <div className="flex items-baseline text-gray-900 dark:text-white mt-1">
+                    <span className="text-4xl font-bold">₹{expert.expertProfile.hourlyRate}</span>
+                    <span className="text-lg text-gray-500 dark:text-gray-400 ml-1">/hr</span>
+                </div>
+            </div>
+        </div>
+
+        {/* Availability Schedule Display */}
+        {expert.expertProfile.availability && expert.expertProfile.availability.length > 0 && (
+            <div className="mb-8">
+                <h4 className="text-gray-500 dark:text-gray-400 text-sm font-medium uppercase tracking-wider mb-3">Weekly Availability</h4>
+                <div className="space-y-2">
+                    {expert.expertProfile.availability.map((slot) => (
+                        <div key={slot.day} className="flex justify-between items-center text-sm">
+                            <span className={`font-medium ${slot.isActive ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-gray-600'}`}>
+                                {slot.day.slice(0, 3)}
+                            </span>
+                            {slot.isActive ? (
+                                <span className="text-gray-600 dark:text-gray-300">
+                                    {slot.startTime} - {slot.endTime}
+                                </span>
+                            ) : (
+                                <span className="text-gray-400 dark:text-gray-600 italic">Unavailable</span>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            </div>
+        )}
+
+        <form onSubmit={handleBook} className="space-y-5">
+            <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">Select Date</label>
+                <div className="relative group">
+                    <Calendar className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-indigo-500 transition-colors pointer-events-none" size={18} />
+                    <input 
+                       type="date"
+                       required
+                       className="w-full bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl px-4 py-3 pl-11 outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:text-white transition-all text-sm font-medium [color-scheme:light] dark:[color-scheme:dark]"
+                       value={date}
+                       min={new Date().toISOString().split('T')[0]}
+                       onChange={(e) => setDate(e.target.value)}
+                    />
+                </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+                <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">Start</label>
+                    <div className="relative group">
+                        <Clock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-indigo-500 transition-colors pointer-events-none" size={18} />
+                        <input 
+                           type="time"
+                           required
+                           className="w-full bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl px-4 py-3 pl-11 outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:text-white transition-all text-sm font-medium [color-scheme:light] dark:[color-scheme:dark]"
+                           value={startTime}
+                           onChange={(e) => setStartTime(e.target.value)}
+                        />
+                    </div>
+                </div>
+                <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">End</label>
+                    <div className="relative group">
+                        <Clock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-indigo-500 transition-colors pointer-events-none" size={18} />
+                        <input 
+                           type="time"
+                           required
+                           className="w-full bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl px-4 py-3 pl-11 outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:text-white transition-all text-sm font-medium [color-scheme:light] dark:[color-scheme:dark]"
+                           value={endTime}
+                           onChange={(e) => setEndTime(e.target.value)}
+                        />
+                    </div>
+                </div>
+            </div>
+            
+            <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">Message</label>
+                <textarea
+                   className="w-full bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:text-white transition-all resize-none min-h-[100px] text-sm font-medium placeholder-gray-400"
+                   placeholder="Briefly describe what you'd like to discuss..."
+                   value={notes}
+                   onChange={(e) => setNotes(e.target.value)}
+                ></textarea>
+            </div>
+
+            {/* Availability Feedback */}
+            {date && (
+                <div className={`text-sm font-medium ${getAvailabilityError() ? 'text-red-500' : 'text-green-500'}`}>
+                    {getAvailabilityError() || 'Slot available'}
+                </div>
+            )}
+
+            {/* Coupon Input */}
+             <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">Coupon Code</label>
+                <div className="flex gap-2">
+                    <input
+                        type="text"
+                        className="flex-1 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:text-white transition-all text-sm font-medium"
+                        placeholder="Enter code"
+                        value={couponCode}
+                        onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                        disabled={!!discountApplied}
+                    />
+                    {discountApplied ? (
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setDiscountApplied(null);
+                                setCouponCode('');
+                            }}
+                            className="px-4 py-2 bg-red-100 text-red-600 rounded-xl font-medium text-sm hover:bg-red-200"
+                        >
+                            Remove
+                        </button>
+                    ) : (
+                        <button
+                            type="button"
+                            onClick={async () => {
+                                if (!couponCode) return;
+                                setIsVerifyingCoupon(true);
+                                try {
+                                    const { data } = await axios.post('/coupons/verify', { code: couponCode });
+                                    setDiscountApplied(data);
+                                } catch (error) {
+                                    showNotification('error', error.response?.data?.message || 'Invalid Coupon');
+                                    setCouponCode('');
+                                } finally {
+                                    setIsVerifyingCoupon(false);
+                                }
+                            }}
+                            disabled={isVerifyingCoupon || !couponCode}
+                            className="px-4 py-2 bg-gray-200 dark:bg-zinc-800 text-gray-800 dark:text-gray-200 rounded-xl font-medium text-sm hover:bg-gray-300 dark:hover:bg-zinc-700 disabled:opacity-50"
+                        >
+                            {isVerifyingCoupon ? '...' : 'Apply'}
+                        </button>
+                    )}
+                </div>
+                {discountApplied && (
+                    <p className="mt-2 text-sm text-green-600 flex items-center">
+                        <CheckCircle size={14} className="mr-1" />
+                        Coupon applied! You save {discountApplied.discountType === 'percentage' ? `${discountApplied.value}%` : `₹${discountApplied.value}`}
+                    </p>
+                )}
+            </div>
+
+            <button 
+                type="submit" 
+                disabled={bookingLoading || !!getAvailabilityError()}
+                className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/25 transform transition hover:-translate-y-0.5 relative overflow-hidden group disabled:opacity-70 disabled:cursor-not-allowed"
+            >
+                <span className="relative z-10 flex items-center justify-center">
+                    {bookingLoading ? (
+                        <>
+                            <Loader size={20} className="animate-spin mr-2" />
+                            Processing...
+                        </>
+                    ) : (
+                        <>
+                            Confirm Booking <ArrowRight size={18} className="ml-2 group-hover:translate-x-1 transition-transform" />
+                        </>
+                    )}
+                </span>
+            </button>
+        </form>
+    </div>
+  );
+
   if (loading) return (
     <div className="min-h-[80vh] flex items-center justify-center">
       <div className="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
@@ -319,7 +492,7 @@ const ExpertProfile = () => {
   return (
     <div className="min-h-screen pb-12">
       {/* Premium Header with Noise Texture */}
-      <div className="relative h-64 w-full overflow-hidden bg-[#0A0A0A]">
+      <div className="relative h-56 md:h-64 w-full overflow-hidden bg-[#0A0A0A]">
          {/* Notification Toast */}
          {notification && (
             <div className={`fixed top-24 right-4 z-50 max-w-md w-full animate-in slide-in-from-right fade-in duration-300`}>
@@ -359,7 +532,7 @@ const ExpertProfile = () => {
          </div>
       </div>
 
-      <div className="container mx-auto px-4 sm:px-6 -mt-32 relative z-20">
+      <div className="container mx-auto px-4 sm:px-6 -mt-24 md:-mt-32 relative z-20">
         <div className="flex flex-col lg:flex-row gap-8">
             {/* Left Column: Profile & Content */}
             <div className="flex-1">
@@ -398,6 +571,11 @@ const ExpertProfile = () => {
                     </div>
                 </SpotlightCard>
 
+                {/* Mobile Booking Card (Visible only on small screens) */}
+                <div className="lg:hidden mb-8">
+                    {renderBookingCard()}
+                </div>
+
                 {/* About Section */}
                 <div className="space-y-8">
                     <section>
@@ -408,7 +586,7 @@ const ExpertProfile = () => {
                              <p>{expert.expertProfile.bio || "No bio provided."}</p>
                         </div>
                     </section>
-
+                    
                     {/* Reviews */}
                     <section>
                         <div className="flex items-center justify-between mb-8">
@@ -461,7 +639,7 @@ const ExpertProfile = () => {
                         
                         {user && user.roles?.includes('expert') && (
                              <div className="mb-10 p-6 bg-yellow-50 dark:bg-yellow-900/10 rounded-2xl text-center border border-yellow-100 dark:border-yellow-900/20">
-                                <p className="text-yellow-700 dark:text-yellow-500 font-medium">Experts cannot leave reviews for other experts.</p>
+                                <p className="text-yellow-700 dark:text-yellow-500 font-medium">Only users with confirmed appointments can write a review.</p>
                             </div>
                         )}
 
@@ -548,181 +726,10 @@ const ExpertProfile = () => {
                 </div>
             </div>
 
-            {/* Right Column: Booking Card */}
-            <div className="lg:w-96">
+            {/* Right Column: Booking Card (Hidden on mobile, visible on lg) */}
+            <div className="hidden lg:block lg:w-96">
                 <div className="sticky top-8">
-                    <div className="bg-white dark:bg-zinc-900/80 backdrop-blur-xl p-6 md:p-8 rounded-3xl border border-gray-100 dark:border-white/10 shadow-2xl">
-                        <div className="flex items-baseline justify-between mb-8 pb-6 border-b border-gray-100 dark:border-white/10">
-                            <div>
-                                <span className="text-gray-500 dark:text-gray-400 text-sm font-medium uppercase tracking-wider">Hourly Rate</span>
-                                <div className="flex items-baseline text-gray-900 dark:text-white mt-1">
-                                    <span className="text-4xl font-bold">₹{expert.expertProfile.hourlyRate}</span>
-                                    <span className="text-lg text-gray-500 dark:text-gray-400 ml-1">/hr</span>
-                                </div>
-                            </div>
-                            </div>
-
-
-                        {/* Availability Schedule Display */}
-                        {expert.expertProfile.availability && expert.expertProfile.availability.length > 0 && (
-                            <div className="mb-8">
-                                <h4 className="text-gray-500 dark:text-gray-400 text-sm font-medium uppercase tracking-wider mb-3">Weekly Availability</h4>
-                                <div className="space-y-2">
-                                    {expert.expertProfile.availability.map((slot) => (
-                                        <div key={slot.day} className="flex justify-between items-center text-sm">
-                                            <span className={`font-medium ${slot.isActive ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-gray-600'}`}>
-                                                {slot.day.slice(0, 3)}
-                                            </span>
-                                            {slot.isActive ? (
-                                                <span className="text-gray-600 dark:text-gray-300">
-                                                    {slot.startTime} - {slot.endTime}
-                                                </span>
-                                            ) : (
-                                                <span className="text-gray-400 dark:text-gray-600 italic">Unavailable</span>
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        <form onSubmit={handleBook} className="space-y-5">
-                            <div>
-                                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">Select Date</label>
-                                <div className="relative group">
-                                    <Calendar className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-indigo-500 transition-colors pointer-events-none" size={18} />
-                                    <input 
-                                       type="date"
-                                       required
-                                       className="w-full bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl px-4 py-3 pl-11 outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:text-white transition-all text-sm font-medium [color-scheme:light] dark:[color-scheme:dark]"
-                                       value={date}
-                                       min={new Date().toISOString().split('T')[0]}
-                                       onChange={(e) => setDate(e.target.value)}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">Start</label>
-                                    <div className="relative group">
-                                        <Clock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-indigo-500 transition-colors pointer-events-none" size={18} />
-                                        <input 
-                                           type="time"
-                                           required
-                                           className="w-full bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl px-4 py-3 pl-11 outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:text-white transition-all text-sm font-medium [color-scheme:light] dark:[color-scheme:dark]"
-                                           value={startTime}
-                                           onChange={(e) => setStartTime(e.target.value)}
-                                        />
-                                    </div>
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">End</label>
-                                    <div className="relative group">
-                                        <Clock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-indigo-500 transition-colors pointer-events-none" size={18} />
-                                        <input 
-                                           type="time"
-                                           required
-                                           className="w-full bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl px-4 py-3 pl-11 outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:text-white transition-all text-sm font-medium [color-scheme:light] dark:[color-scheme:dark]"
-                                           value={endTime}
-                                           onChange={(e) => setEndTime(e.target.value)}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div>
-                                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">Message</label>
-                                <textarea
-                                   className="w-full bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:text-white transition-all resize-none min-h-[100px] text-sm font-medium placeholder-gray-400"
-                                   placeholder="Briefly describe what you'd like to discuss..."
-                                   value={notes}
-                                   onChange={(e) => setNotes(e.target.value)}
-                                ></textarea>
-                            </div>
-
-                            {/* Availability Feedback */}
-                            {date && (
-                                <div className={`text-sm font-medium ${getAvailabilityError() ? 'text-red-500' : 'text-green-500'}`}>
-                                    {getAvailabilityError() || 'Slot available'}
-                                </div>
-                            )}
-
-                            {/* Coupon Input */}
-                             <div>
-                                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">Coupon Code</label>
-                                <div className="flex gap-2">
-                                    <input
-                                        type="text"
-                                        className="flex-1 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:text-white transition-all text-sm font-medium"
-                                        placeholder="Enter code"
-                                        value={couponCode}
-                                        onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                                        disabled={!!discountApplied}
-                                    />
-                                    {discountApplied ? (
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                setDiscountApplied(null);
-                                                setCouponCode('');
-                                            }}
-                                            className="px-4 py-2 bg-red-100 text-red-600 rounded-xl font-medium text-sm hover:bg-red-200"
-                                        >
-                                            Remove
-                                        </button>
-                                    ) : (
-                                        <button
-                                            type="button"
-                                            onClick={async () => {
-                                                if (!couponCode) return;
-                                                setIsVerifyingCoupon(true);
-                                                try {
-                                                    const { data } = await axios.post('/coupons/verify', { code: couponCode });
-                                                    setDiscountApplied(data);
-                                                    // showNotification('success', `Coupon Applied: ${data.discountType === 'percentage' ? data.value + '%' : '₹' + data.value} Off`);
-                                                } catch (error) {
-                                                    showNotification('error', error.response?.data?.message || 'Invalid Coupon');
-                                                    setCouponCode('');
-                                                } finally {
-                                                    setIsVerifyingCoupon(false);
-                                                }
-                                            }}
-                                            disabled={isVerifyingCoupon || !couponCode}
-                                            className="px-4 py-2 bg-gray-200 dark:bg-zinc-800 text-gray-800 dark:text-gray-200 rounded-xl font-medium text-sm hover:bg-gray-300 dark:hover:bg-zinc-700 disabled:opacity-50"
-                                        >
-                                            {isVerifyingCoupon ? '...' : 'Apply'}
-                                        </button>
-                                    )}
-                                </div>
-                                {discountApplied && (
-                                    <p className="mt-2 text-sm text-green-600 flex items-center">
-                                        <CheckCircle size={14} className="mr-1" />
-                                        Coupon applied! You save {discountApplied.discountType === 'percentage' ? `${discountApplied.value}%` : `₹${discountApplied.value}`}
-                                    </p>
-                                )}
-                            </div>
-
-                            <button 
-                                type="submit" 
-                                disabled={bookingLoading || !!getAvailabilityError()}
-                                className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/25 transform transition hover:-translate-y-0.5 relative overflow-hidden group disabled:opacity-70 disabled:cursor-not-allowed"
-                            >
-                                <span className="relative z-10 flex items-center justify-center">
-                                    {bookingLoading ? (
-                                        <>
-                                            <Loader size={20} className="animate-spin mr-2" />
-                                            Processing...
-                                        </>
-                                    ) : (
-                                        <>
-                                            Confirm Booking <ArrowRight size={18} className="ml-2 group-hover:translate-x-1 transition-transform" />
-                                        </>
-                                    )}
-                                </span>
-                            </button>
-                        </form>
-                    </div>
+                   {renderBookingCard()}
                 </div>
             </div>
         </div>

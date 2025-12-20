@@ -95,7 +95,7 @@ const ExpertList = () => {
         </h2>
       </div>
 
-      <div className="sticky top-6 max-w-2xl mx-auto mb-12 group z-50">
+      <div className="sticky top-24 max-w-2xl mx-auto mb-12 group z-30">
         <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity"></div>
         <div className="relative bg-white dark:bg-zinc-900 rounded-2xl shadow-xl flex items-center p-2 border border-gray-100 dark:border-white/10">
             <Search className="ml-4 text-gray-400 group-focus-within:text-indigo-500 transition-colors" size={24} />

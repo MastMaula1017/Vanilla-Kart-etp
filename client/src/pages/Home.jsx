@@ -33,7 +33,7 @@ const Home = () => {
       {/* 1. Hero Section */}
       <section className="relative overflow-hidden rounded-3xl bg-dark text-white shadow-xl mt-4 dark:border dark:border-gray-800">
         <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 to-purple-700 opacity-90 dark:opacity-80"></div>
-        <div className="relative z-10 px-8 py-20 text-center md:py-32">
+        <div className="relative z-10 px-6 py-12 md:py-32 text-center">
           <div className="inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-sm font-medium text-purple-100 backdrop-blur-xl mb-6 border border-white/20">
              <span className="flex h-2 w-2 rounded-full bg-green-400 mr-2"></span>
              New Experts Added Daily

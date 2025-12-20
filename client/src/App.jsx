@@ -41,14 +41,15 @@ import { Toaster } from 'react-hot-toast';
 
 function App() {
   const location = useLocation();
-  const isFullWidthNode = location.pathname === '/get-the-app' || location.pathname === '/become-expert';
+  const isAdminRoute = location.pathname.startsWith('/admin');
+  const isFullWidthNode = location.pathname === '/get-the-app' || location.pathname === '/become-expert' || isAdminRoute;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 dark:text-gray-100 transition-colors duration-300 flex flex-col">
       <SocketProvider>
        <Toaster position="top-center" />
        <ScrollToTop />
-       <Navbar />
+       {!isAdminRoute && <Navbar />}
       <div className={`${isFullWidthNode ? '' : 'container mx-auto px-4 py-8'} flex-grow`}>
         <Routes>
           <Route path="/" element={<Home />} />
