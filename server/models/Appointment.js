@@ -11,7 +11,9 @@ const appointmentSchema = new mongoose.Schema({
     razorpayOrderId: { type: String },
     razorpayPaymentId: { type: String },
     amount: { type: Number },
-    status: { type: String, enum: ['pending', 'captured', 'failed'], default: 'pending' }
+    status: { type: String, enum: ['pending', 'captured', 'failed'], default: 'pending' },
+    platformFee: { type: Number }, // 5% of amount
+    expertEarnings: { type: Number } // 95% of amount
   },
   notes: { type: String },
   createdAt: { type: Date, default: Date.now }

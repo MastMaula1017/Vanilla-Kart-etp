@@ -18,7 +18,13 @@ const promoteUser = async () => {
       process.exit(1);
     }
 
-    user.role = 'admin';
+    if (!user.roles.includes('admin')) {
+      user.roles.push('admin');
+    }
+    // Ensure customer role is also there conform to new policy
+    if (!user.roles.includes('customer')) {
+      user.roles.push('customer');
+    }
     await user.save();
 
     console.log(`User ${user.email} (Name: ${user.name}) has been promoted to ADMIN.`);

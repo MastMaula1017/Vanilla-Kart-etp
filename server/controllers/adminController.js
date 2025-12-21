@@ -15,13 +15,21 @@ const getDashboardStats = async (req, res) => {
     
     // Once you have Appointment model
     const totalAppointments = await Appointment.countDocuments();
+    
+    // Calculate Total Platform Earnings (Sum of platformFee)
+    const earningsResult = await Appointment.aggregate([
+        { $match: { 'payment.status': 'captured' } },
+        { $group: { _id: null, total: { $sum: "$payment.platformFee" } } }
+    ]);
+    const totalEarnings = earningsResult.length > 0 ? earningsResult[0].total : 0;
 
     res.json({
       users: totalUsers,
       experts: totalExperts,
       inquiries: totalInquiries,
       pendingInquiries,
-      appointments: totalAppointments
+      appointments: totalAppointments,
+      totalEarnings // Platform earnings
     });  } catch (error) {
     res.status(500).json({ message: error.message });
   }

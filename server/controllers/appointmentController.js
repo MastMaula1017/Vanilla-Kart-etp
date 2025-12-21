@@ -6,11 +6,77 @@ const Coupon = require('../models/Coupon');
 // @access  Private
 const crypto = require('crypto');
 
+const getBookedSlots = async (req, res) => {
+  const { expertId, date } = req.query;
+  try {
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+    
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const appointments = await Appointment.find({
+      expert: expertId,
+      date: {
+        $gte: startOfDay,
+        $lte: endOfDay
+      },
+      status: { $ne: 'cancelled' }
+    }).select('startTime endTime');
+
+    res.json(appointments);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 const createAppointment = async (req, res) => {
   const { expertId, date, startTime, endTime, notes, payment, couponCode } = req.body;
 
   if (req.user._id.toString() === expertId) {
     return res.status(400).json({ message: 'You cannot book an appointment with yourself' });
+  }
+
+  // 1. Enforce 1-Hour Duration
+  // StartTime and EndTime are expected to be in "HH:MM" format (24h)
+  const [startHour, startMin] = startTime.split(':').map(Number);
+  const [endHour, endMin] = endTime.split(':').map(Number);
+
+  const startTotalMinutes = startHour * 60 + startMin;
+  const endTotalMinutes = endHour * 60 + endMin;
+  const duration = endTotalMinutes - startTotalMinutes;
+
+  if (duration !== 60) {
+      return res.status(400).json({ message: 'Appointments must be exactly 1 hour long.' });
+  }
+
+  // 2. Check for Overlaps
+  // We check if there is any existing appointment for the same expert and date
+  // where the new time range overlaps with an existing one.
+  // Overlap logic: (StartA < EndB) and (EndA > StartB)
+  const startOfDay = new Date(date);
+  startOfDay.setHours(0, 0, 0, 0);
+  const endOfDay = new Date(date);
+  endOfDay.setHours(23, 59, 59, 999);
+
+  const existingAppointments = await Appointment.find({
+      expert: expertId,
+      date: {
+          $gte: startOfDay,
+          $lte: endOfDay
+      },
+      status: { $ne: 'cancelled' }
+  });
+
+  const hasOverlap = existingAppointments.some(appt => {
+      // Convert existing times to comparable values
+      // Assuming appt.startTime and appt.endTime are "HH:MM" strings
+      // Ideally better to store as full Dates or minutes from midnight, but sticking to current schema string format
+      return (startTime < appt.endTime && endTime > appt.startTime);
+  });
+
+  if (hasOverlap) {
+      return res.status(400).json({ message: 'This time slot is already booked.' });
   }
 
   // Payment Verification (If payment details are provided)
@@ -48,7 +114,9 @@ const createAppointment = async (req, res) => {
           razorpayOrderId: payment.razorpayOrderId,
           razorpayPaymentId: payment.razorpayPaymentId,
           amount: payment.amount,
-          status: 'captured'
+          status: 'captured',
+          platformFee: payment.amount * 0.05,
+          expertEarnings: payment.amount * 0.95
       } : undefined,
       status: 'pending' // Expert must manually approve even if paid
     });
@@ -136,4 +204,4 @@ const updateAppointmentStatus = async (req, res) => {
   }
 };
 
-module.exports = { createAppointment, getAppointments, updateAppointmentStatus };
+module.exports = { createAppointment, getAppointments, updateAppointmentStatus, getBookedSlots };

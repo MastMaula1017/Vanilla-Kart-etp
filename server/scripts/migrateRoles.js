@@ -40,26 +40,20 @@ const migrateRoles = async () => {
         // However, Mongoose model 'User' still has 'role' string in the file when I run this script *before* changing the file.
         // So I should treat user as having .role.
         
-        if (user.role && !user.roles) {
-            user.roles = [user.role];
-            // We authorize 'expert' and 'admin' also being 'customer' implicitly? 
-            // Or just keep strict mapping? strict mapping for now.
-            // But usually admins want to be customers too?
-            // The prompt said "role also + admin role". 
+        if (user.role && (!user.roles || user.roles.length === 0)) {
+            const newRoles = ['customer'];
+            if (user.role && user.role !== 'customer') {
+                newRoles.push(user.role);
+            }
             
-            // Let's just migrate strict 1:1 first.
             await User.updateOne(
                 { _id: user._id }, 
                 { 
-                    $set: { roles: [user.role] },
-                    // We will NOT unset 'role' yet to prevent breaking app if I stop halfway. 
-                    // But to be clean we should. Let's keep 'role' for a moment as fallback? 
-                    // No, "User model uses a single role string. We will refactor this to roles array."
-                    // Let's unset it to catch bugs.
+                    $set: { roles: newRoles },
                     $unset: { role: "" }
                 }
             );
-            console.log(`Migrated user ${user.email} (${user.role}) -> roles: [${user.role}]`);
+            console.log(`Migrated user ${user.email} (${user.role}) -> roles: ${JSON.stringify(newRoles)}`);
         }
     }
 

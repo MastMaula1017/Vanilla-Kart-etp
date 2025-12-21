@@ -42,6 +42,7 @@ const ExpertPayments = () => {
                     <div className="bg-white/20 px-4 py-2 rounded-lg backdrop-blur-sm">
                         <span className="text-white text-sm uppercase font-semibold tracking-wider">Total Earnings</span>
                         <p className="text-3xl font-bold text-white">₹{totalEarnings.toLocaleString('en-IN')}</p>
+                        <p className="text-xs text-indigo-100 mt-1">(After 5% Platform Fee)</p>
                     </div>
                 </div>
 

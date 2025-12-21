@@ -102,7 +102,7 @@ exports.getExpertPayments = async (req, res) => {
         const payments = appointments.map(appt => ({
             _id: appt._id,
             paymentId: appt.payment.razorpayPaymentId,
-            amount: appt.payment.amount,
+            amount: appt.payment.expertEarnings || appt.payment.amount, // Use expertEarnings if available, fallback for old records
             date: appt.createdAt,
             customer: appt.customer,
             status: appt.payment.status

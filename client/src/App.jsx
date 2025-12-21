@@ -22,6 +22,7 @@ import BecomeExpert from './pages/BecomeExpert';
 import Careers from './pages/Careers';
 import CookiePolicy from './pages/CookiePolicy';
 import Contact from './pages/Contact';
+import Maintenance from './pages/Maintenance';
 import ProtectedRoute from './components/ProtectedRoute';
 
 import Footer from './components/Footer';
@@ -33,6 +34,7 @@ import AdminInquiries from './pages/admin/AdminInquiries';
 import AdminCoupons from './pages/admin/AdminCoupons';
 import AdminVerification from './pages/admin/AdminVerification';
 import AdminAnnouncements from './pages/admin/AdminAnnouncements';
+import AdminEarnings from './pages/admin/AdminEarnings';
 
 import ScrollToTop from './components/ScrollToTop';
 
@@ -43,6 +45,18 @@ function App() {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
   const isFullWidthNode = location.pathname === '/get-the-app' || location.pathname === '/become-expert' || isAdminRoute;
+
+  // MAINTENANCE MODE TOGGLE
+  // Set this to true to enable maintenance mode for the entire site
+  const MAINTENANCE_MODE = true;
+
+  if (MAINTENANCE_MODE) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 dark:text-gray-100 transition-colors duration-300 flex flex-col">
+        <Maintenance />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 dark:text-gray-100 transition-colors duration-300 flex flex-col">
@@ -70,6 +84,7 @@ function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/experts" element={<ExpertList />} />
           <Route path="/experts/:id" element={<ExpertProfile />} />
+          <Route path="/maintenance" element={<Maintenance />} />
           
           <Route path="/expert/payments" element={
             <ProtectedRoute>
@@ -121,6 +136,11 @@ function App() {
             <Route path="coupons" element={
               <ProtectedRoute allowedRoles={['admin']}>
                 <AdminCoupons />
+              </ProtectedRoute>
+            } />
+            <Route path="earnings" element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminEarnings />
               </ProtectedRoute>
             } />
             <Route path="verifications" element={

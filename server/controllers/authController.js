@@ -15,16 +15,34 @@ const registerUser = async (req, res) => {
   const { name, email, password, role, expertProfile } = req.body;
 
   try {
-    const userExists = await User.findOne({ email });
-
     if (userExists) {
-      return res.status(400).json({ message: 'User already exists' });
+    if (userExists) {
+      return res.status(400).json({ message: 'You are already signed up. Please login instead.' });
+    }
+    }
+
+    // Validate Expert Profile if role is expert
+    if (role === 'expert') {
+        if (!expertProfile || !expertProfile.specialization || !expertProfile.hourlyRate) {
+            return res.status(400).json({ message: 'Experts must provide Specialization and Hourly Rate' });
+        }
+        
+        if (Number(expertProfile.hourlyRate) < 200) {
+            return res.status(400).json({ message: 'Hourly Rate must be at least ₹200' });
+        }
+        
+        // Strict validation for availability
+        if (!expertProfile.availability || !Array.isArray(expertProfile.availability) || expertProfile.availability.length === 0) {
+            return res.status(400).json({ message: 'Experts must provide availability (days and time slots)' });
+        }
     }
 
     // Determine initial roles
-    // If role is passed (e.g. 'expert'), use that. Default to 'customer'.
-    // We store as array.
-    const initialRoles = role ? [role] : ['customer'];
+    // We store as array. Always include 'customer'.
+    const initialRoles = ['customer'];
+    if (role && role !== 'customer') {
+        initialRoles.push(role);
+    }
 
     const user = await User.create({
       name,
@@ -115,6 +133,9 @@ const updateUserProfile = async (req, res) => {
       
       // Update expert profile if one of the roles is expert
       if (user.roles.includes('expert') && req.body.expertProfile) {
+          if (req.body.expertProfile.hourlyRate && Number(req.body.expertProfile.hourlyRate) < 200) {
+              return res.status(400).json({ message: 'Hourly Rate must be at least ₹200' });
+          }
           user.expertProfile = {
               ...user.expertProfile,
               ...req.body.expertProfile
@@ -396,7 +417,24 @@ const googleLogin = async (req, res) => {
       const randomPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
       
       const newRole = role || 'customer';
-      const initialRoles = [newRole];
+
+      // Validate Expert Profile for Google Sign up
+      if (newRole === 'expert') {
+          if (!expertProfile || !expertProfile.specialization || !expertProfile.hourlyRate) {
+              return res.status(400).json({ message: 'Experts must provide Specialization and Hourly Rate' });
+          }
+          if (Number(expertProfile.hourlyRate) < 200) {
+              return res.status(400).json({ message: 'Hourly Rate must be at least ₹200' });
+          }
+          if (!expertProfile.availability || !Array.isArray(expertProfile.availability) || expertProfile.availability.length === 0) {
+              return res.status(400).json({ message: 'Experts must provide availability (days and time slots)' });
+          }
+      }
+
+      const initialRoles = ['customer'];
+      if (role && role !== 'customer') {
+          initialRoles.push(role);
+      }
 
       user = await User.create({
         name,
@@ -405,7 +443,7 @@ const googleLogin = async (req, res) => {
         googleId,
         profileImage: picture,
         roles: initialRoles,
-        expertProfile: newRole === 'expert' ? expertProfile : undefined
+        expertProfile: role === 'expert' ? expertProfile : undefined
       });
 
       res.status(201).json({

@@ -12,7 +12,8 @@ import {
   Bell,
   Menu,
   X,
-  Home
+  Home,
+  DollarSign
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
@@ -37,6 +38,7 @@ const AdminLayout = () => {
     { name: 'Inquiries', path: '/admin/inquiries', icon: MessageSquare, roles: ['admin', 'inquiry_support', 'moderator'] },
     { name: 'Announcements', path: '/admin/announcements', icon: Bell, roles: ['admin', 'moderator'] },
     { name: 'Coupons', path: '/admin/coupons', icon: Tag, roles: ['admin'] },
+    { name: 'Earnings', path: '/admin/earnings', icon: DollarSign, roles: ['admin'] },
     { name: 'Verifications', path: '/admin/verifications', icon: CheckCircle, roles: ['admin', 'moderator'] },
   ];
 

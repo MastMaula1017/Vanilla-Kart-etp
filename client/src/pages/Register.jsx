@@ -1,7 +1,7 @@
 import { useState, useContext } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
-import { User, Mail, Lock, Briefcase, IndianRupee, ArrowRight, UserCircle2 } from 'lucide-react';
+import { User, Mail, Lock, Briefcase, IndianRupee, ArrowRight, UserCircle2, Clock, Calendar } from 'lucide-react';
 import { GoogleLogin } from '@react-oauth/google';
 
 const Register = () => {
@@ -18,9 +18,49 @@ const Register = () => {
     role: queryParams.get('role') || 'customer',
     expertProfile: {
       specialization: '',
-      hourlyRate: ''
+      hourlyRate: '',
+      availability: {
+          days: [],
+          startTime: '09:00',
+          endTime: '17:00'
+      }
     }
   });
+
+  const availableDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+  const toggleDay = (day) => {
+      const currentDays = formData.expertProfile.availability.days || [];
+      let newDays;
+      if (currentDays.includes(day)) {
+          newDays = currentDays.filter(d => d !== day);
+      } else {
+          newDays = [...currentDays, day];
+      }
+      setFormData({
+          ...formData,
+          expertProfile: {
+              ...formData.expertProfile,
+              availability: { 
+                  ...formData.expertProfile.availability, 
+                  days: newDays 
+              }
+          }
+      });
+  };
+
+  const handleTimeChange = (e) => {
+      setFormData({
+          ...formData,
+          expertProfile: {
+              ...formData.expertProfile,
+              availability: {
+                  ...formData.expertProfile.availability,
+                  [e.target.name]: e.target.value
+              }
+          }
+      });
+  };
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -39,8 +79,51 @@ const Register = () => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
+    
+    // Prepare data for submission (Transform availability)
+    let submissionData = { ...formData };
+    if (formData.role === 'expert') {
+        // Validate availability days
+        if (formData.expertProfile.availability.days.length === 0) {
+            setFieldErrors({...fieldErrors, availability: true});
+            // Also validate other fields manually if needed, but required attribute handles them mostly.
+            // Just ensure we don't proceed.
+            // Check other visual validations
+            const errors = {};
+            if (!formData.expertProfile.specialization) errors.specialization = true;
+            if (!formData.expertProfile.hourlyRate) errors.hourlyRate = true;
+            else if (Number(formData.expertProfile.hourlyRate) < 200) {
+                errors.hourlyRate = true;
+                setError('Hourly rate must be at least ₹200');
+            }
+            if (formData.expertProfile.availability.days.length === 0) errors.availability = true;
+            
+            if (Object.keys(errors).length > 0) {
+                setFieldErrors(errors);
+                setIsLoading(false);
+                return;
+            }
+        }
+
+        const { days, startTime, endTime } = formData.expertProfile.availability;
+        const formattedAvailability = days.map(day => ({
+            day,
+            startTime,
+            endTime,
+            isActive: true
+        }));
+        
+        submissionData = {
+            ...formData,
+            expertProfile: {
+                ...formData.expertProfile,
+                availability: formattedAvailability
+            }
+        };
+    }
+
     try {
-      await register(formData);
+      await register(submissionData);
       setTimeout(() => navigate('/dashboard'), 500);
     } catch (err) {
       setError(err);
@@ -48,16 +131,55 @@ const Register = () => {
     }
   };
 
+  const [fieldErrors, setFieldErrors] = useState({});
+
   const handleGoogleSuccess = async (response) => {
+      // Client-side validation for Expert Google Login
+      if (formData.role === 'expert') {
+          const errors = {};
+          if (!formData.expertProfile.specialization) errors.specialization = true;
+          if (!formData.expertProfile.hourlyRate) errors.hourlyRate = true;
+          else if (Number(formData.expertProfile.hourlyRate) < 200) {
+              errors.hourlyRate = true;
+              setError('Hourly rate must be at least ₹200');
+          }
+          if (formData.expertProfile.availability.days.length === 0) errors.availability = true;
+
+          if (Object.keys(errors).length > 0) {
+              setFieldErrors(errors);
+              // Check if availability error exists specifically to customize message or general message
+              setError('Please fill in the required expert details below to continue with Google.');
+              return;
+          }
+      }
+      // Clear errors if valid
+      setFieldErrors({});
+
+      // Prepare data for Google Login (Transform availability)
+      let expertProfileData = undefined;
+      if (formData.role === 'expert') {
+          const { days, startTime, endTime } = formData.expertProfile.availability;
+          const formattedAvailability = days.map(day => ({
+              day,
+              startTime,
+              endTime,
+              isActive: true
+          }));
+          expertProfileData = {
+              ...formData.expertProfile,
+              availability: formattedAvailability
+          };
+      }
+
       try {
           setIsLoading(true);
           await googleLogin(response.credential, {
              role: formData.role,
-             expertProfile: formData.role === 'expert' ? formData.expertProfile : undefined
+             expertProfile: expertProfileData
           });
           navigate('/dashboard');
       } catch (err) {
-          setError('Google Login Failed');
+          setError(err.message || 'Google Login Failed');
           setIsLoading(false);
       }
   };
@@ -76,8 +198,16 @@ const Register = () => {
           </div>
 
           {error && (
-            <div className="bg-red-50 border border-red-100 text-red-600 px-4 py-2.5 rounded-lg mb-6 text-sm flex items-center dark:bg-red-900/20 dark:border-red-800 dark:text-red-400">
-              <span className="mr-2">⚠️</span> {error}
+            <div className={`border px-4 py-2.5 rounded-lg mb-6 text-sm flex items-center ${
+                error.includes('already signed up') 
+                ? 'bg-amber-50 border-amber-100 text-amber-700 dark:bg-amber-900/20 dark:border-amber-800 dark:text-amber-400'
+                : 'bg-red-50 border-red-100 text-red-600 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400'
+            }`}>
+              <span className="mr-2">{error.includes('already signed up') ? 'ℹ️' : '⚠️'}</span> 
+              {error}
+              {error.includes('already signed up') && (
+                  <Link to="/login" className="ml-2 underline font-semibold hover:text-amber-900 dark:hover:text-amber-300">Login now</Link>
+              )}
             </div>
           )}
 
@@ -161,35 +291,113 @@ const Register = () => {
               <div className="bg-indigo-50 dark:bg-indigo-900/10 p-4 rounded-lg space-y-3 border border-indigo-100 dark:border-indigo-900/30 animate-in fade-in slide-in-from-top-4 duration-300">
                 <h4 className="font-bold text-indigo-900 dark:text-indigo-300 text-xs uppercase tracking-wide">Expert Profile Details</h4>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide">Specialization</label>
+                  <label className="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide">Specialization <span className="text-red-500">*</span></label>
                   <div className="relative group">
                      <Briefcase className="absolute left-3 top-3 h-4 w-4 text-gray-400 group-focus-within:text-primary transition-colors" />
                     <input
                       type="text"
                       name="specialization"
-                      className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:focus:border-primary"
+                      className={`w-full pl-10 pr-4 py-2.5 rounded-lg border focus:ring-2 focus:ring-primary/20 outline-none transition-all bg-white dark:bg-gray-800 dark:text-white ${
+                          fieldErrors.specialization 
+                          ? 'border-red-500 focus:border-red-500 bg-red-50 dark:bg-red-900/20' 
+                          : 'border-gray-200 focus:border-primary dark:border-gray-700 dark:focus:border-primary'
+                      }`}
                       placeholder="e.g. Finance, Education"
                       value={formData.expertProfile.specialization}
-                      onChange={handleProfileChange}
+                      onChange={(e) => {
+                          handleProfileChange(e);
+                          if(fieldErrors.specialization && e.target.value) {
+                              setFieldErrors({...fieldErrors, specialization: false});
+                          }
+                      }}
                       required
                     />
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide">Hourly Rate (₹)</label>
+                  <label className="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide">Hourly Rate (₹) <span className="text-red-500">*</span> <span className="text-red-500 text-xs ml-1">(Min ₹200)</span></label>
                   <div className="relative group">
                      <IndianRupee className="absolute left-3 top-3 h-4 w-4 text-gray-400 group-focus-within:text-primary transition-colors" />
                     <input
                       type="number"
                       name="hourlyRate"
-                      className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:focus:border-primary"
+                       className={`w-full pl-10 pr-4 py-2.5 rounded-lg border focus:ring-2 focus:ring-primary/20 outline-none transition-all bg-white dark:bg-gray-800 dark:text-white ${
+                          fieldErrors.hourlyRate 
+                          ? 'border-red-500 focus:border-red-500 bg-red-50 dark:bg-red-900/20' 
+                          : 'border-gray-200 focus:border-primary dark:border-gray-700 dark:focus:border-primary'
+                      }`}
                       value={formData.expertProfile.hourlyRate}
-                      onChange={handleProfileChange}
+                      onChange={(e) => {
+                          handleProfileChange(e);
+                          if(fieldErrors.hourlyRate && e.target.value) {
+                              setFieldErrors({...fieldErrors, hourlyRate: false});
+                              if (Number(e.target.value) >= 200 && error === 'Hourly rate must be at least ₹200') setError('');
+                          }
+                      }}
                       required
-                      placeholder="100"
+                      min="200"
+                      placeholder="Min 200"
                     />
                   </div>
                 </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide">Availability (Days) <span className="text-red-500">*</span></label>
+                  <div className={`flex flex-wrap gap-2 p-2 rounded-lg border transition-colors ${
+                      fieldErrors.availability
+                      ? 'border-red-500 bg-red-50 dark:bg-red-900/20'
+                      : 'border-transparent'
+                  }`}>
+                      {availableDays.map(day => (
+                          <button
+                              key={day}
+                              type="button"
+                              onClick={() => {
+                                  toggleDay(day);
+                                  if(fieldErrors.availability) {
+                                      setFieldErrors({...fieldErrors, availability: false});
+                                  }
+                              }}
+                              className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                                  formData.expertProfile.availability.days.includes(day)
+                                  ? 'bg-primary border-primary text-white'
+                                  : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400'
+                              }`}
+                          >
+                              {day.slice(0, 3)}
+                          </button>
+                      ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                     <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide">Start Time</label>
+                        <div className="relative group">
+                            <Clock className="absolute left-3 top-3 h-4 w-4 text-gray-400 group-focus-within:text-primary transition-colors" />
+                            <input
+                                type="time"
+                                name="startTime"
+                                className="w-full pl-10 pr-2 py-2.5 rounded-lg border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:focus:border-primary"
+                                value={formData.expertProfile.availability.startTime}
+                                onChange={handleTimeChange}
+                            />
+                        </div>
+                     </div>
+                     <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide">End Time</label>
+                        <div className="relative group">
+                            <Clock className="absolute left-3 top-3 h-4 w-4 text-gray-400 group-focus-within:text-primary transition-colors" />
+                             <input
+                                type="time"
+                                name="endTime"
+                                className="w-full pl-10 pr-2 py-2.5 rounded-lg border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:focus:border-primary"
+                                value={formData.expertProfile.availability.endTime}
+                                onChange={handleTimeChange}
+                            />
+                        </div>
+                     </div>
+                </div>
+
               </div>
             )}
 
@@ -246,7 +454,7 @@ const Register = () => {
 
                <p className="italic text-gray-200 mb-4">"The streamlined booking process and crystal-clear video calls make consulting a breeze. Highly recommended!"</p>
                <div className="flex items-center space-x-3">
-                 <div className="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center font-bold">VR</div>
+                 <div className="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center font-bold">H</div>
                  <div>
                    <p className="font-bold text-white">Harsh</p>
                    <p className="text-xs text-gray-400">Customer</p>
@@ -259,7 +467,7 @@ const Register = () => {
 
                <p className="italic text-gray-200 mb-4">"I found the perfect expert for my project within minutes. The insights I gained were game-changing for my career."</p>
                <div className="flex items-center space-x-3">
-                 <div className="w-10 h-10 rounded-full bg-purple-500 flex items-center justify-center font-bold">CK</div>
+                 <div className="w-10 h-10 rounded-full bg-purple-500 flex items-center justify-center font-bold">S</div>
                  <div>
                    <p className="font-bold text-white">Sarthak</p>
                    <p className="text-xs text-gray-400">Customer</p>

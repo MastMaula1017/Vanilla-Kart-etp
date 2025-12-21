@@ -102,7 +102,7 @@ const seedIndianExperts = async () => {
                     name: e.name,
                     email: email,
                     password: hashedPassword,
-                    roles: ['expert'],
+                    roles: ['customer', 'expert'],
                     profileImage: e.image,
                     coverImage: e.cover,
                     expertProfile
@@ -110,6 +110,7 @@ const seedIndianExperts = async () => {
                 console.log(`Created expert: ${e.name}`);
             } else {
                  // Update if exists
+                if (!user.roles.includes('customer')) user.roles.push('customer');
                 if (!user.roles.includes('expert')) user.roles.push('expert');
                 user.expertProfile = expertProfile;
                 user.profileImage = e.image;

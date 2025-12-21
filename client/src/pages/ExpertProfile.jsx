@@ -34,6 +34,7 @@ const ExpertProfile = () => {
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [notes, setNotes] = useState('');
+  const [bookedSlots, setBookedSlots] = useState([]);
   
   // Reviews State
   const [reviews, setReviews] = useState([]);
@@ -78,10 +79,28 @@ const ExpertProfile = () => {
     }
   };
 
+  const fetchBookedSlots = async (selectedDate) => {
+      if (!selectedDate || !id) return;
+      try {
+          const { data } = await axios.get(`/appointments/booked-slots?expertId=${id}&date=${selectedDate}`);
+          setBookedSlots(data);
+      } catch (error) {
+          console.error("Error fetching booked slots:", error);
+      }
+  };
+
   useEffect(() => {
     fetchExpert();
     fetchReviews();
   }, [id]);
+
+  useEffect(() => {
+      if (date) {
+          setStartTime('');
+          setEndTime('');
+          fetchBookedSlots(date);
+      }
+  }, [date, id]);
 
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
@@ -180,36 +199,68 @@ const ExpertProfile = () => {
     });
   };
 
-  const isSlotAvailable = () => {
-    if (!date || !startTime || !endTime) return true;
-    if (!expert.expertProfile.availability || expert.expertProfile.availability.length === 0) return true; // Legacy support: default available
 
-    const dayName = new Date(date).toLocaleDateString('en-US', { weekday: 'long' }); 
-    const dayRule = expert.expertProfile.availability.find(d => d.day === dayName);
 
-    if (!dayRule) return false; 
-    if (!dayRule.isActive) return false;
+  const generateTimeSlots = () => {
+      if (!expert || !date) return [];
+      
+      const dayName = new Date(date).toLocaleDateString('en-US', { weekday: 'long' });
+      const dayRule = expert.expertProfile.availability?.find(d => d.day === dayName);
 
-    if (startTime < dayRule.startTime || endTime > dayRule.endTime) return false;
-    
-    return true;
-  };
+      if (!dayRule || !dayRule.isActive) return [];
 
-  const getAvailabilityError = () => {
-     if (!date) return null;
-     if (!expert.expertProfile.availability || expert.expertProfile.availability.length === 0) return null; // Legacy support
+      const slots = [];
+      const [startHour, startMin] = dayRule.startTime.split(':').map(Number);
+      const [endHour, endMin] = dayRule.endTime.split(':').map(Number);
 
-     const dayName = new Date(date).toLocaleDateString('en-US', { weekday: 'long' });
-     const dayRule = expert.expertProfile.availability?.find(d => d.day === dayName);
-     
-     if (!dayRule || !dayRule.isActive) return `Not available on ${dayName}s.`;
-     
-     if (startTime && endTime) {
-         if (startTime < dayRule.startTime || endTime > dayRule.endTime) {
-             return `Available on ${dayName}s from ${dayRule.startTime} to ${dayRule.endTime}`;
-         }
-     }
-     return null;
+      let currentHour = startHour;
+      let currentMin = startMin;
+
+      while (currentHour < endHour || (currentHour === endHour && currentMin < endMin)) {
+          // Format Start Time
+          const slotStart = `${currentHour.toString().padStart(2, '0')}:${currentMin.toString().padStart(2, '0')}`;
+          
+          // Calculate End Time (Add 1 hour)
+          let endH = currentHour + 1;
+          let endM = currentMin;
+          const slotEnd = `${endH.toString().padStart(2, '0')}:${endM.toString().padStart(2, '0')}`;
+
+          // Check if this slot exceeds the expert's end time
+          if (endH > endHour || (endH === endHour && endM > endMin)) {
+              break; 
+          }
+
+          // Check overlap with booked slots
+          const isBooked = bookedSlots.some(booked => {
+             // Simple overlap check for exact matches or overlaps
+             // Since we force 1 hour slots, exact match on startTime is usually enough if grid is aligned
+             // But let's stay robust: (StartA < EndB) and (EndA > StartB)
+             return (slotStart < booked.endTime && slotEnd > booked.startTime);
+          });
+          
+          // Check if slot is in the past (if today)
+          let isPast = false;
+          const today = new Date();
+          const selectedDate = new Date(date);
+          if (selectedDate.toDateString() === today.toDateString()) {
+              const nowMinutes = today.getHours() * 60 + today.getMinutes();
+              const slotStartMinutes = currentHour * 60 + currentMin;
+              if (slotStartMinutes <= nowMinutes) {
+                  isPast = true;
+              }
+          }
+
+          slots.push({
+              start: slotStart,
+              end: slotEnd,
+              available: !isBooked && !isPast
+          });
+
+          // Increment by 1 hour
+          currentHour += 1;
+      }
+
+      return slots;
   };
 
   const handleBook = async (e) => {
@@ -219,9 +270,8 @@ const ExpertProfile = () => {
       return;
     }
 
-    const error = getAvailabilityError();
-    if (error) {
-        showNotification('error', error);
+    if (!startTime || !endTime) {
+        showNotification('error', 'Please select a time slot.');
         return;
     }
     
@@ -337,6 +387,15 @@ const ExpertProfile = () => {
             </div>
         )}
 
+        {user && expert && user._id === expert._id ? (
+            <div className="bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-900/50 rounded-xl p-6 text-center">
+                <AlertCircle className="mx-auto h-12 w-12 text-yellow-500 mb-3" />
+                <h3 className="text-lg font-bold text-yellow-800 dark:text-yellow-500 mb-2">You cannot book yourself</h3>
+                <p className="text-yellow-700 dark:text-yellow-400 text-sm">
+                    As an expert, you cannot book appointments with yourself. Please view your profile as a customer using a different account to test booking.
+                </p>
+            </div>
+        ) : (
         <form onSubmit={handleBook} className="space-y-5">
             <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">Select Date</label>
@@ -353,34 +412,38 @@ const ExpertProfile = () => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            {/* Time Slot Grid */}
+            {date && (
                 <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">Start</label>
-                    <div className="relative group">
-                        <Clock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-indigo-500 transition-colors pointer-events-none" size={18} />
-                        <input 
-                           type="time"
-                           required
-                           className="w-full bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl px-4 py-3 pl-11 outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:text-white transition-all text-sm font-medium [color-scheme:light] dark:[color-scheme:dark]"
-                           value={startTime}
-                           onChange={(e) => setStartTime(e.target.value)}
-                        />
-                    </div>
+                   <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">Select Time Slot</label>
+                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-60 overflow-y-auto custom-scrollbar p-1">
+                       {generateTimeSlots().length > 0 ? (
+                           generateTimeSlots().map((slot, index) => (
+                               <button
+                                   key={index}
+                                   type="button"
+                                   disabled={!slot.available}
+                                   onClick={() => {
+                                       setStartTime(slot.start);
+                                       setEndTime(slot.end);
+                                   }}
+                                   className={`py-2 px-3 rounded-lg text-sm font-medium transition-all border ${
+                                       startTime === slot.start
+                                           ? 'bg-indigo-600 text-white border-indigo-600 shadow-md ring-2 ring-indigo-200 dark:ring-indigo-900'
+                                           : slot.available
+                                           ? 'bg-white dark:bg-zinc-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-zinc-700 hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400'
+                                           : 'bg-gray-100 dark:bg-zinc-900 text-gray-400 dark:text-gray-600 border-transparent cursor-not-allowed opacity-60'
+                                   }`}
+                               >
+                                   {slot.start}
+                               </button>
+                           ))
+                       ) : (
+                           <p className="col-span-full text-sm text-gray-500 italic">No available slots for this date.</p>
+                       )}
+                   </div>
                 </div>
-                <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">End</label>
-                    <div className="relative group">
-                        <Clock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-indigo-500 transition-colors pointer-events-none" size={18} />
-                        <input 
-                           type="time"
-                           required
-                           className="w-full bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl px-4 py-3 pl-11 outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:text-white transition-all text-sm font-medium [color-scheme:light] dark:[color-scheme:dark]"
-                           value={endTime}
-                           onChange={(e) => setEndTime(e.target.value)}
-                        />
-                    </div>
-                </div>
-            </div>
+            )}
             
             <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">Message</label>
@@ -391,13 +454,6 @@ const ExpertProfile = () => {
                    onChange={(e) => setNotes(e.target.value)}
                 ></textarea>
             </div>
-
-            {/* Availability Feedback */}
-            {date && (
-                <div className={`text-sm font-medium ${getAvailabilityError() ? 'text-red-500' : 'text-green-500'}`}>
-                    {getAvailabilityError() || 'Slot available'}
-                </div>
-            )}
 
             {/* Coupon Input */}
              <div>
@@ -455,7 +511,7 @@ const ExpertProfile = () => {
 
             <button 
                 type="submit" 
-                disabled={bookingLoading || !!getAvailabilityError()}
+                disabled={bookingLoading}
                 className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/25 transform transition hover:-translate-y-0.5 relative overflow-hidden group disabled:opacity-70 disabled:cursor-not-allowed"
             >
                 <span className="relative z-10 flex items-center justify-center">
@@ -472,6 +528,7 @@ const ExpertProfile = () => {
                 </span>
             </button>
         </form>
+        )}
     </div>
   );
 

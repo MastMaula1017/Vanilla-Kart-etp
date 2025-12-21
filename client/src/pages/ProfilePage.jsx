@@ -33,6 +33,27 @@ const ProfilePage = () => {
 
   useEffect(() => {
     if(user) {
+        // Create full week template to ensure all days are shown
+        const fullWeekTemplate = [
+            { day: 'Monday', startTime: '09:00', endTime: '17:00' },
+            { day: 'Tuesday', startTime: '09:00', endTime: '17:00' },
+            { day: 'Wednesday', startTime: '09:00', endTime: '17:00' },
+            { day: 'Thursday', startTime: '09:00', endTime: '17:00' },
+            { day: 'Friday', startTime: '09:00', endTime: '17:00' },
+            { day: 'Saturday', startTime: '10:00', endTime: '14:00' },
+            { day: 'Sunday', startTime: '10:00', endTime: '14:00' },
+        ];
+
+        // Merge existing user availability with template
+        const mergedAvailability = fullWeekTemplate.map(template => {
+            const userDay = user.expertProfile?.availability?.find(d => d.day === template.day);
+            if (userDay) {
+                // Return the saved state, respecting isActive flag from DB
+                return { ...userDay }; 
+            }
+            return { ...template, isActive: false };
+        });
+
         setFormData(prev => ({
             ...prev,
             name: user.name,
@@ -40,7 +61,7 @@ const ProfilePage = () => {
             specialization: user.expertProfile?.specialization || '',
             hourlyRate: user.expertProfile?.hourlyRate || '',
             bio: user.expertProfile?.bio || '',
-            availability: user.expertProfile?.availability?.length > 0 ? user.expertProfile.availability : formData.availability
+            availability: mergedAvailability
         }));
     }
   }, [user]);
@@ -60,6 +81,12 @@ const ProfilePage = () => {
     e.preventDefault();
     setLoading(true);
     setMessage(null);
+
+    if (user.roles?.includes('expert') && Number(formData.hourlyRate) < 200) {
+        setMessage({ type: 'error', text: 'Hourly rate must be at least ₹200' });
+        setLoading(false);
+        return;
+    }
     try {
       const { data } = await axios.put('/auth/profile', {
         name: formData.name,
@@ -348,7 +375,7 @@ const ProfilePage = () => {
                                             </div>
                                         </div>
                                         <div className={inputGroupClass}>
-                                            <label className={labelClass}>Hourly Rate (₹)</label>
+                                            <label className={labelClass}>Hourly Rate (₹) <span className="text-red-500 text-xs ml-1">(Min ₹200)</span></label>
                                             <div className={inputWrapperClass}>
                                                 <IndianRupee className={iconClass} size={18} />
                                                 <input 
@@ -358,6 +385,7 @@ const ProfilePage = () => {
                                                     onChange={handleChange} 
                                                     className={inputClass}
                                                     placeholder="2000"
+                                                    min="200"
                                                 />
                                             </div>
                                         </div>
