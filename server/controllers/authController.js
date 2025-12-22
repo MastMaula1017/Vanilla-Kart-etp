@@ -8,17 +8,41 @@ const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
 };
 
-// @desc    Register a new user
-// @route   POST /api/users
-// @access  Public
+const sendTokenResponse = (user, statusCode, res) => {
+  const token = generateToken(user._id);
+
+  const options = {
+    expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+    httpOnly: true,
+    // For localhost development, we MUST use secure: false. 
+    // If you are on https://your-production.com, this should be true.
+    secure: process.env.NODE_ENV === 'production', 
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', 
+  };
+  
+  // Debug log to confirm what's happening
+  console.log(`Setting Cookie: Secure=${options.secure}, SameSite=${options.sameSite}, Env='${process.env.NODE_ENV}'`);
+
+  res.status(statusCode).cookie('jwt', token, options).json({
+    _id: user._id,
+    name: user.name,
+    email: user.email,
+    roles: user.roles,
+    expertProfile: user.expertProfile,
+    profileImage: user.profileImage,
+    coverImage: user.coverImage,
+    googleId: user.googleId,
+  });
+};
+
+// ... existing registerUser ...
 const registerUser = async (req, res) => {
   const { name, email, password, role, expertProfile } = req.body;
 
   try {
-    if (userExists) {
+    const userExists = await User.findOne({ email });
     if (userExists) {
       return res.status(400).json({ message: 'You are already signed up. Please login instead.' });
-    }
     }
 
     // Validate Expert Profile if role is expert
@@ -53,13 +77,7 @@ const registerUser = async (req, res) => {
     });
 
     if (user) {
-      res.status(201).json({
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        roles: user.roles,
-        token: generateToken(user._id)
-      });
+      sendTokenResponse(user, 201, res);
     } else {
       res.status(400).json({ message: 'Invalid user data' });
     }
@@ -68,9 +86,7 @@ const registerUser = async (req, res) => {
   }
 };
 
-// @desc    Auth user & get token
-// @route   POST /api/users/login
-// @access  Public
+// ... existing loginUser ...
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
@@ -78,19 +94,177 @@ const loginUser = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (user && (await user.matchPassword(password))) {
-      res.json({
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        roles: user.roles,
-        expertProfile: user.expertProfile,
-        token: generateToken(user._id)
-      });
+      sendTokenResponse(user, 200, res);
     } else {
       res.status(401).json({ message: 'Invalid email or password' });
     }
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Logout user / clear cookie
+// @route   POST /api/auth/logout
+// @access  Public
+const logoutUser = (req, res) => {
+  res.cookie('jwt', '', {
+    httpOnly: true,
+    expires: new Date(0)
+  });
+  res.status(200).json({ message: 'Logged out successfully' });
+};
+
+
+// ... existing getUserProfile ...
+
+// ... existing updateUserProfile ...
+const updateUserProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+
+    if (user) {
+      user.name = req.body.name || user.name;
+      user.email = req.body.email || user.email;
+      if (req.body.password) {
+        user.password = req.body.password;
+      }
+      
+      // Update expert profile if one of the roles is expert
+      if (user.roles.includes('expert') && req.body.expertProfile) {
+          if (req.body.expertProfile.hourlyRate && Number(req.body.expertProfile.hourlyRate) < 200) {
+              return res.status(400).json({ message: 'Hourly Rate must be at least ₹200' });
+          }
+          user.expertProfile = {
+              ...user.expertProfile,
+              ...req.body.expertProfile
+          };
+      }
+
+      const updatedUser = await user.save();
+      sendTokenResponse(updatedUser, 200, res);
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// ... existing changePassword ...
+
+// ... existing forgotPassword ...
+
+// ... existing resetPassword ...
+
+// ... existing getUserById ...
+
+// ... existing uploadProfilePhoto ...
+const uploadProfilePhoto = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    const user = await User.findById(req.user._id);
+    if (user) {
+      user.profileImage = req.file.path;
+      const updatedUser = await user.save();
+      
+      sendTokenResponse(updatedUser, 200, res);
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
+
+// ... existing uploadCoverPhoto ...
+const uploadCoverPhoto = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    const user = await User.findById(req.user._id);
+    if (user) {
+      user.coverImage = req.file.path;
+      const updatedUser = await user.save();
+      
+      sendTokenResponse(updatedUser, 200, res);
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
+
+// ... existing googleLogin ...
+const googleLogin = async (req, res) => {
+  const { credential, role, expertProfile } = req.body;
+  
+  console.log("--- Google Login Debug ---");
+  console.log("Client ID from Env:", process.env.VITE_GOOGLE_CLIENT_ID);
+  
+  try {
+    const client = new OAuth2Client(process.env.VITE_GOOGLE_CLIENT_ID);
+
+    const ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: process.env.VITE_GOOGLE_CLIENT_ID,
+    });
+    const { name, email, picture, sub: googleId } = ticket.getPayload();
+    console.log("Google Verify Success:", email);
+
+    let user = await User.findOne({ email });
+
+    if (user) {
+      if (!user.googleId) {
+          user.googleId = googleId; // Link account
+          await user.save();
+      }
+      sendTokenResponse(user, 200, res);
+    } else {
+      // Create new user
+      // Generate a random password since they use Google
+      const randomPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
+      
+      const newRole = role || 'customer';
+
+      // Validate Expert Profile for Google Sign up
+      if (newRole === 'expert') {
+          if (!expertProfile || !expertProfile.specialization || !expertProfile.hourlyRate) {
+              return res.status(400).json({ message: 'Experts must provide Specialization and Hourly Rate' });
+          }
+          if (Number(expertProfile.hourlyRate) < 200) {
+              return res.status(400).json({ message: 'Hourly Rate must be at least ₹200' });
+          }
+          if (!expertProfile.availability || !Array.isArray(expertProfile.availability) || expertProfile.availability.length === 0) {
+              return res.status(400).json({ message: 'Experts must provide availability (days and time slots)' });
+          }
+      }
+
+      const initialRoles = ['customer'];
+      if (role && role !== 'customer') {
+          initialRoles.push(role);
+      }
+
+      user = await User.create({
+        name,
+        email,
+        password: randomPassword,
+        googleId,
+        profileImage: picture,
+        roles: initialRoles,
+        expertProfile: role === 'expert' ? expertProfile : undefined
+      });
+
+      sendTokenResponse(user, 201, res);
+    }
+  } catch (error) {
+    console.error("Google Login Error:", error);
+    res.status(400).json({ message: 'Google login failed', error: error.message });
   }
 };
 
@@ -117,48 +291,7 @@ const getUserProfile = async (req, res) => {
   }
 };
 
-// @desc    Update user profile
-// @route   PUT /api/users/profile
-// @access  Private
-const updateUserProfile = async (req, res) => {
-  try {
-    const user = await User.findById(req.user._id);
 
-    if (user) {
-      user.name = req.body.name || user.name;
-      user.email = req.body.email || user.email;
-      if (req.body.password) {
-        user.password = req.body.password;
-      }
-      
-      // Update expert profile if one of the roles is expert
-      if (user.roles.includes('expert') && req.body.expertProfile) {
-          if (req.body.expertProfile.hourlyRate && Number(req.body.expertProfile.hourlyRate) < 200) {
-              return res.status(400).json({ message: 'Hourly Rate must be at least ₹200' });
-          }
-          user.expertProfile = {
-              ...user.expertProfile,
-              ...req.body.expertProfile
-          };
-      }
-
-      const updatedUser = await user.save();
-
-      res.json({
-        _id: updatedUser._id,
-        name: updatedUser.name,
-        email: updatedUser.email,
-        roles: updatedUser.roles,
-        expertProfile: updatedUser.expertProfile,
-        token: generateToken(updatedUser._id)
-      });
-    } else {
-      res.status(404).json({ message: 'User not found' });
-    }
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
 
 // @desc    Change user password
 // @route   PUT /api/auth/password
@@ -314,152 +447,11 @@ const getUserById = async (req, res) => {
   }
 };
 
-// @desc    Upload profile photo
-// @route   POST /api/auth/profile/image
-// @access  Protected
-const uploadProfilePhoto = async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ message: 'No file uploaded' });
-    }
 
-    const user = await User.findById(req.user._id);
-    if (user) {
-      user.profileImage = req.file.path;
-      const updatedUser = await user.save();
-      
-      res.json({
-        _id: updatedUser._id,
-        name: updatedUser.name,
-        email: updatedUser.email,
-        roles: updatedUser.roles,
-        expertProfile: updatedUser.expertProfile,
-        profileImage: updatedUser.profileImage,
-        coverImage: updatedUser.coverImage,
-        token: generateToken(updatedUser._id),
-      });
-    } else {
-      res.status(404).json({ message: 'User not found' });
-    }
-  } catch (error) {
-    res.status(500).json({ message: 'Server Error' });
-  }
-};
 
-// @desc    Upload cover photo
-// @route   POST /api/auth/profile/cover
-// @access  Protected
-const uploadCoverPhoto = async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ message: 'No file uploaded' });
-    }
 
-    const user = await User.findById(req.user._id);
-    if (user) {
-      user.coverImage = req.file.path;
-      const updatedUser = await user.save();
-      
-      res.json({
-        _id: updatedUser._id,
-        name: updatedUser.name,
-        email: updatedUser.email,
-        roles: updatedUser.roles,
-        expertProfile: updatedUser.expertProfile,
-        profileImage: updatedUser.profileImage,
-        coverImage: updatedUser.coverImage,
-        token: generateToken(updatedUser._id),
-      });
-    } else {
-      res.status(404).json({ message: 'User not found' });
-    }
-  } catch (error) {
-    res.status(500).json({ message: 'Server Error' });
-  }
-};
 
-// @desc    Google Login
-// @route   POST /api/auth/google
-// @access  Public
-// @desc    Google Login
-// @route   POST /api/auth/google
-// @access  Public
-const googleLogin = async (req, res) => {
-  const { credential, role, expertProfile } = req.body;
-  const client = new OAuth2Client(process.env.VITE_GOOGLE_CLIENT_ID);
 
-  try {
-    const ticket = await client.verifyIdToken({
-      idToken: credential,
-      audience: process.env.VITE_GOOGLE_CLIENT_ID,
-    });
-    const { name, email, picture, sub: googleId } = ticket.getPayload();
-
-    let user = await User.findOne({ email });
-
-    if (user) {
-      if (!user.googleId) {
-          user.googleId = googleId; // Link account
-          await user.save();
-      }
-      res.json({
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        roles: user.roles,
-        expertProfile: user.expertProfile,
-        profileImage: user.profileImage || picture,
-        token: generateToken(user._id),
-      });
-    } else {
-      // Create new user
-      // Generate a random password since they use Google
-      const randomPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
-      
-      const newRole = role || 'customer';
-
-      // Validate Expert Profile for Google Sign up
-      if (newRole === 'expert') {
-          if (!expertProfile || !expertProfile.specialization || !expertProfile.hourlyRate) {
-              return res.status(400).json({ message: 'Experts must provide Specialization and Hourly Rate' });
-          }
-          if (Number(expertProfile.hourlyRate) < 200) {
-              return res.status(400).json({ message: 'Hourly Rate must be at least ₹200' });
-          }
-          if (!expertProfile.availability || !Array.isArray(expertProfile.availability) || expertProfile.availability.length === 0) {
-              return res.status(400).json({ message: 'Experts must provide availability (days and time slots)' });
-          }
-      }
-
-      const initialRoles = ['customer'];
-      if (role && role !== 'customer') {
-          initialRoles.push(role);
-      }
-
-      user = await User.create({
-        name,
-        email,
-        password: randomPassword,
-        googleId,
-        profileImage: picture,
-        roles: initialRoles,
-        expertProfile: role === 'expert' ? expertProfile : undefined
-      });
-
-      res.status(201).json({
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        roles: user.roles,
-        expertProfile: user.expertProfile,
-        profileImage: user.profileImage,
-        token: generateToken(user._id),
-      });
-    }
-  } catch (error) {
-    res.status(400).json({ message: 'Google login failed', error: error.message });
-  }
-};
 
 // @desc    Upload verification document
 // @route   POST /api/auth/profile/verification
@@ -518,6 +510,7 @@ module.exports = {
   uploadProfilePhoto,
   uploadCoverPhoto,
   googleLogin,
-  uploadVerificationDocument
+  uploadVerificationDocument,
+  logoutUser
 };
 

@@ -1,18 +1,27 @@
 const express = require('express');
+const mongoose = require('mongoose'); // Added
 const dotenv = require('dotenv');
 const cors = require('cors');
 const http = require('http');
 const { Server } = require('socket.io');
 const connectDB = require('./config/db');
 const Message = require('./models/Message'); // Import Message model
+const helmet = require('helmet'); // Added
+const mongoSanitize = require('express-mongo-sanitize'); // Added
+const xss = require('xss-clean'); // Added
 
 dotenv.config();
 connectDB();
 
 const app = express();
+app.set('trust proxy', 1); // Trust first proxy (Heroku/Vercel/Railway)
 const server = http.createServer(app);
 
 const path = require('path');
+
+// ...
+
+const cookieParser = require('cookie-parser');
 
 // ...
 
@@ -24,6 +33,13 @@ app.use(cors({
 }));
 
 app.use(express.json());
+app.use(cookieParser());
+
+// Security Middleware
+app.use(helmet());
+// app.use(mongoSanitize());
+// app.use(xss()); // Incompatible with newer Express/Node versions
+
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Routes Placeholders

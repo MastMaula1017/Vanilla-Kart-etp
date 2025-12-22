@@ -95,9 +95,22 @@ const seedExperts = async () => {
         }
 
         // Create Experts
+const categoryCovers = {
+  "Software Development": "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1200&h=400&fit=crop",
+  "Marketing": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&h=400&fit=crop",
+  "Business": "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&h=400&fit=crop",
+  "Finance": "https://images.unsplash.com/photo-1554224155-98406852d009?w=1200&h=400&fit=crop",
+  "Legal": "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?w=1200&h=400&fit=crop",
+  "Design": "https://images.unsplash.com/photo-1558655146-d09347e92766?w=1200&h=400&fit=crop",
+  "Health": "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=1200&h=400&fit=crop",
+  "Career Coaching": "https://images.unsplash.com/photo-1521791136064-7986c2920216?w=1200&h=400&fit=crop"
+};
+
         for (const e of expertData) {
             const email = `${e.name.toLowerCase().replace(/\s+/g, '.')}@example.com`;
             let user = await User.findOne({ email });
+
+            const coverImage = e.cover || categoryCovers[e.category] || 'https://images.unsplash.com/photo-1557683316-973673baf926?w=1200&h=400&fit=crop';
 
             const expertProfile = {
                 specialization: e.category,
@@ -106,11 +119,11 @@ const seedExperts = async () => {
                 verificationStatus: 'verified',
                 badges: ['Verified'],
                 availability: [
-                    { day: 'Monday', slots: ['09:00', '10:00', '14:00', '15:00'] },
-                    { day: 'Tuesday', slots: ['09:00', '11:00', '13:00', '16:00'] },
-                    { day: 'Wednesday', slots: ['10:00', '14:00', '15:00', '17:00'] },
-                    { day: 'Thursday', slots: ['09:00', '12:00', '14:00'] },
-                    { day: 'Friday', slots: ['09:00', '10:00', '11:00', '15:00'] }
+                    { day: 'Monday', startTime: '09:00', endTime: '17:00', isActive: true },
+                    { day: 'Tuesday', startTime: '09:00', endTime: '17:00', isActive: true },
+                    { day: 'Wednesday', startTime: '10:00', endTime: '18:00', isActive: true },
+                    { day: 'Thursday', startTime: '09:00', endTime: '16:00', isActive: true },
+                    { day: 'Friday', startTime: '09:00', endTime: '15:00', isActive: true }
                 ],
                 averageRating: 0,
                 totalReviews: 0
@@ -123,7 +136,7 @@ const seedExperts = async () => {
                     password: hashedPassword,
                     roles: ['expert'],
                     profileImage: e.image,
-                    coverImage: 'https://images.unsplash.com/photo-1557683316-973673baf926?w=1200&h=400&fit=crop', // Generic professional cover
+                    coverImage: coverImage, 
                     expertProfile
                 });
                 console.log(`Created expert: ${e.name}`);
@@ -132,7 +145,7 @@ const seedExperts = async () => {
                 if (!user.roles.includes('expert')) user.roles.push('expert');
                 user.expertProfile = expertProfile;
                 user.profileImage = e.image;
-                user.coverImage = 'https://images.unsplash.com/photo-1557683316-973673baf926?w=1200&h=400&fit=crop';
+                user.coverImage = coverImage;
                 await user.save();
                 console.log(`Updated expert: ${e.name}`);
             }

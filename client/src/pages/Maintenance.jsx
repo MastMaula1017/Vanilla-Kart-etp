@@ -18,10 +18,10 @@ const Maintenance = () => {
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
       </div>
 
-      <div className="max-w-5xl w-full flex flex-col md:flex-row items-center justify-between gap-12 relative z-10 glass-panel">
+      <div className="max-w-5xl w-full flex flex-col md:flex-row items-center justify-between gap-8 md:gap-12 relative z-10 glass-panel">
         {/* Lottie Animation Section */}
-        <div className="w-full md:w-1/2 flex justify-center order-2 md:order-1">
-          <div className="relative w-full max-w-lg aspect-square">
+        <div className="w-full md:w-1/2 flex justify-center">
+          <div className="relative w-full max-w-sm md:max-w-lg aspect-square">
             <div className="absolute inset-0 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
             <Lottie 
               animationData={maintenanceAnimation} 
@@ -32,7 +32,7 @@ const Maintenance = () => {
         </div>
 
         {/* Content Section */}
-        <div className="w-full md:w-1/2 text-center md:text-left space-y-8 order-1 md:order-2">
+        <div className="w-full md:w-1/2 text-center md:text-left space-y-6 md:space-y-8">
           <div className="space-y-4">
             <h1 className="text-5xl md:text-6xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 dark:from-blue-400 dark:via-indigo-400 dark:to-purple-400 leading-tight">
               We'll be <br /> back soon!
@@ -76,13 +76,14 @@ const Maintenance = () => {
             <div className="flex items-center gap-4">
                {[
                  { Icon: FaTwitter, href: "#" },
-                 { Icon: FaGithub, href: "#" },
-                 { Icon: FaLinkedin, href: "#" },
+                 { Icon: FaGithub, href: "https://github.com/MastMaula1017" },
+                 { Icon: FaLinkedin, href: "https://www.linkedin.com/in/003va/" },
                  { Icon: FaInstagram, href: "#" }
                ].map(({ Icon, href }, index) => (
                  <a 
                    key={index}
                    href={href}
+                   target="_blank"
                    className="p-3 text-gray-500 transition-colors duration-300 bg-white/50 dark:bg-gray-800/50 rounded-full hover:bg-white hover:text-blue-600 dark:hover:bg-gray-800 dark:hover:text-blue-400 shadow-sm border border-gray-100 dark:border-gray-700 backdrop-blur-sm"
                  >
                    <Icon size={20} />

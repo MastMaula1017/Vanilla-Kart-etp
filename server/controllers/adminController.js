@@ -65,6 +65,11 @@ const getAllExperts = async (req, res) => {
 const updateUserRoles = async (req, res) => {
   const { roles } = req.body; // Expect array of roles
   
+  // RESTRICTION: Only Super Admin can assign 'admin' role
+  if (roles.includes('admin') && req.user.email !== 'vansh14raturi@gmail.com') {
+      return res.status(403).json({ message: 'Access Denied: Only the Super Admin can assign the Admin role.' });
+  }
+
   // Check if requester is a moderator
   const isModerator = req.user.roles.includes('moderator') && !req.user.roles.includes('admin');
 
@@ -72,6 +77,11 @@ const updateUserRoles = async (req, res) => {
     const user = await User.findById(req.params.id);
 
     if (user) {
+      // PROTCTION: Prevent modification of Super Admin
+      if (user.email === 'vansh14raturi@gmail.com') {
+          return res.status(403).json({ message: 'Super Admin Protected: Cannot modify this account.' });
+      }
+
       if (isModerator) {
          // Moderators can ONLY assign 'inquiry_support' and 'customer' (default)
          // They cannot assign 'admin' or 'moderator'
@@ -109,9 +119,19 @@ const updateUserRoles = async (req, res) => {
 // @access  Private/Admin
 const deleteUser = async (req, res) => {
   try {
+    // RESTRICTION: Only the Super Admin can delete users
+    if (req.user.email !== 'vansh14raturi@gmail.com') {
+      return res.status(403).json({ message: 'Access Denied: Only the Super Admin can delete users.' });
+    }
+
     const user = await User.findById(req.params.id);
 
     if (user) {
+      // PROTCTION: Prevent deletion of Super Admin
+      if (user.email === 'vansh14raturi@gmail.com') {
+          return res.status(403).json({ message: 'Super Admin Protected: Cannot delete this account.' });
+      }
+
       await user.deleteOne();
       res.json({ message: 'User removed' });
     } else {

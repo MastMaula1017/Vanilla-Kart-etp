@@ -7,39 +7,43 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Function to fetch latest user data (validates cookie)
   const refreshUser = async () => {
     try {
       const { data } = await axios.get('/auth/profile');
+      setUser(data);
       
-      // We need to get the token, which updateProfile doesn't always return, but we have it in storage
-      const token = axios.defaults.headers.common['Authorization']?.split(' ')[1];
-      const updatedUser = { ...data, token };
-
-      setUser(updatedUser);
-      
-      if (localStorage.getItem('userInfo')) {
-          localStorage.setItem('userInfo', JSON.stringify(updatedUser));
+      // Update storage to keep UI in sync
+      const storageKey = sessionStorage.getItem('userInfo') ? 'sessionStorage' : 'localStorage';
+      if (storageKey === 'localStorage') {
+        localStorage.setItem('userInfo', JSON.stringify(data));
       } else {
-          sessionStorage.setItem('userInfo', JSON.stringify(updatedUser));
+        sessionStorage.setItem('userInfo', JSON.stringify(data));
       }
     } catch (error) {
-       console.error("Silent refresh failed", error);
+       // If unauthorized, just clear state silently (expected behavior for non-logged-in users)
+       if (error.response?.status === 401) {
+         logout(false);
+         return; 
+       }
+       console.error("Session check failed", error);
     }
   };
 
   useEffect(() => {
-    // Check localStorage first, then sessionStorage
+    // Cleanup legacy insecure token if present
+    localStorage.removeItem('token');
+
+    // Optimistically set user from storage if available (for fast UI)
+    // Note: This data will NOT contain the token anymore
     const userInfo = JSON.parse(localStorage.getItem('userInfo')) || JSON.parse(sessionStorage.getItem('userInfo'));
     
     if (userInfo) {
       setUser(userInfo);
-      // Set auth token header
-      axios.defaults.headers.common['Authorization'] = `Bearer ${userInfo.token}`;
-      
-      // Trigger a silent refresh to get latest roles
-      refreshUser();
     }
-    setLoading(false);
+    
+    // Always verify with backend on mount
+    refreshUser().finally(() => setLoading(false));
   }, []);
 
   const login = async (email, password, rememberMe = false) => {
@@ -52,8 +56,6 @@ export const AuthProvider = ({ children }) => {
       } else {
         sessionStorage.setItem('userInfo', JSON.stringify(data));
       }
-      
-      axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
       return data;
     } catch (error) {
       throw error.response?.data?.message || 'Login failed';
@@ -64,21 +66,26 @@ export const AuthProvider = ({ children }) => {
     try {
       const { data } = await axios.post('/auth/register', userData);
       setUser(data);
-      // Default to localStorage for register for better UX, or could be argument. 
-      // Let's default to localStorage as standard signup flow usually implies "keep me logged in"
+      // Default to localStorage for register
       localStorage.setItem('userInfo', JSON.stringify(data));
-      axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
       return data;
     } catch (error) {
       throw error.response?.data?.message || 'Registration failed';
     }
   };
 
-  const logout = () => {
+  const logout = async (callApi = true) => {
+    try {
+      if (callApi) {
+        await axios.post('/auth/logout');
+      }
+    } catch (error) {
+      console.error("Logout API failed", error);
+    }
+    
     localStorage.removeItem('userInfo');
     sessionStorage.removeItem('userInfo');
     setUser(null);
-    delete axios.defaults.headers.common['Authorization'];
   };
 
   const forgotPassword = async (email) => {
@@ -101,29 +108,20 @@ export const AuthProvider = ({ children }) => {
 
   const updateUser = (data) => {
     setUser(data);
-    // data should be the full user object with token
     
-    // Check where it was stored to update the correct one
+    // Update wherever it is stored
     if (localStorage.getItem('userInfo')) {
         localStorage.setItem('userInfo', JSON.stringify(data));
     } else {
-        // If not in local, put in session (or if it was in session)
         sessionStorage.setItem('userInfo', JSON.stringify(data));
     }
-    
-    if (data.token) {
-        axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
-    }
   };
-
-
 
   const googleLogin = async (credential, additionalData = {}) => {
     try {
       const { data } = await axios.post('/auth/google', { credential, ...additionalData });
       setUser(data);
       localStorage.setItem('userInfo', JSON.stringify(data));
-      axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
       return data;
     } catch (error) {
        throw error.response?.data?.message || 'Google login failed';

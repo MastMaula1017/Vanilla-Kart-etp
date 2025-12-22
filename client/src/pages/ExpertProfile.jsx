@@ -33,7 +33,6 @@ const ExpertProfile = () => {
   const [date, setDate] = useState('');
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
-  const [notes, setNotes] = useState('');
   const [bookedSlots, setBookedSlots] = useState([]);
   
   // Reviews State
@@ -207,7 +206,7 @@ const ExpertProfile = () => {
       const dayName = new Date(date).toLocaleDateString('en-US', { weekday: 'long' });
       const dayRule = expert.expertProfile.availability?.find(d => d.day === dayName);
 
-      if (!dayRule || !dayRule.isActive) return [];
+      if (!dayRule || !dayRule.isActive || !dayRule.startTime || !dayRule.endTime) return [];
 
       const slots = [];
       const [startHour, startMin] = dayRule.startTime.split(':').map(Number);
@@ -309,7 +308,6 @@ const ExpertProfile = () => {
                     date,
                     startTime,
                     endTime,
-                    notes,
                     payment: {
                         razorpayOrderId: response.razorpay_order_id,
                         razorpayPaymentId: response.razorpay_payment_id,
@@ -445,15 +443,7 @@ const ExpertProfile = () => {
                 </div>
             )}
             
-            <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">Message</label>
-                <textarea
-                   className="w-full bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:text-white transition-all resize-none min-h-[100px] text-sm font-medium placeholder-gray-400"
-                   placeholder="Briefly describe what you'd like to discuss..."
-                   value={notes}
-                   onChange={(e) => setNotes(e.target.value)}
-                ></textarea>
-            </div>
+
 
             {/* Coupon Input */}
              <div>

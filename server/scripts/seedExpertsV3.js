@@ -89,9 +89,10 @@ const seedIndianExperts = async () => {
                 verificationStatus: 'verified',
                 badges: ['Verified', 'Top Rated'],
                 availability: [
-                    { day: 'Monday', slots: ['10:00', '11:00', '15:00', '16:00'] },
-                    { day: 'Wednesday', slots: ['10:00', '12:00', '14:00', '16:00'] },
-                    { day: 'Friday', slots: ['09:00', '11:00', '14:00'] }
+                    { day: 'Monday', startTime: '09:00', endTime: '17:00', isActive: true },
+                    { day: 'Wednesday', startTime: '10:00', endTime: '18:00', isActive: true },
+                    { day: 'Friday', startTime: '09:00', endTime: '15:00', isActive: true },
+                    { day: 'Saturday', startTime: '10:00', endTime: '14:00', isActive: true }
                 ],
                 averageRating: 0,
                 totalReviews: 0
