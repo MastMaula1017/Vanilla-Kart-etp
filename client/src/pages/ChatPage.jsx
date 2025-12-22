@@ -140,6 +140,7 @@ const ChatPage = () => {
           iceServers,
           bundlePolicy: 'max-bundle',
           iceCandidatePoolSize: 10,
+          iceTransportPolicy: 'relay', // FORCE TURN usage to bypass WiFi restrictions
       });
       peerConnectionRef.current = pc;
 
