@@ -138,8 +138,8 @@ const ChatPage = () => {
   const initializePeerConnection = async () => {
       const pc = new RTCPeerConnection({ 
           iceServers,
-          bundlePolicy: 'max-bundle', // Multiplex track on single port (firewall friendly)
-          rtcpMuxPolicy: 'require'
+          bundlePolicy: 'max-bundle',
+          iceCandidatePoolSize: 10,
       });
       peerConnectionRef.current = pc;
 
@@ -292,15 +292,21 @@ const ChatPage = () => {
 
   const toggleMic = () => {
       if(stream) {
-          stream.getAudioTracks()[0].enabled = !micOn;
-          setMicOn(!micOn);
+          const audioTracks = stream.getAudioTracks();
+          if (audioTracks.length > 0) {
+              audioTracks[0].enabled = !micOn;
+              setMicOn(!micOn);
+          }
       }
   };
 
   const toggleVideo = () => {
       if(stream) {
-          stream.getVideoTracks()[0].enabled = !videoOn;
-          setVideoOn(!videoOn);
+          const videoTracks = stream.getVideoTracks();
+          if (videoTracks.length > 0) {
+              videoTracks[0].enabled = !videoOn;
+              setVideoOn(!videoOn);
+          }
       }
   };
 

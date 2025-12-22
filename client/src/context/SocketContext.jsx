@@ -14,7 +14,13 @@ export const SocketProvider = ({ children }) => {
 
   useEffect(() => {
     if (user) {
-      const socketIo = io(SOCKET_URL);
+      const socketIo = io(SOCKET_URL, {
+        transports: ['polling', 'websocket'], // Start with polling (HTTP), upgrade to WS if possible
+        withCredentials: true,
+        reconnectionAttempts: 5,
+        timeout: 20000,
+        path: '/socket.io'
+      });
       
       setSocket(socketIo);
 
