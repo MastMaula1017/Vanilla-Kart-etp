@@ -395,6 +395,14 @@ const ChatPage = () => {
                     </div>
                 </div>
                 <div className="flex items-center space-x-2 text-gray-500">
+                     {/* Connection Status Indicator */}
+                     <div className="hidden md:flex items-center px-2 py-1 rounded-full bg-gray-100 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 mr-2" title={iceServers.some(s => s.urls && s.urls.includes('turn:')) ? "Secure Relay Connection (TURN) Active" : "Basic P2P Connection (STUN) Only - May fail on WiFi"}>
+                        <div className={`w-2 h-2 rounded-full mr-1.5 ${iceServers.some(s => s.urls && s.urls.includes('turn:')) ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
+                        <span className="text-[10px] font-medium text-gray-500 dark:text-gray-400">
+                            {iceServers.some(s => s.urls && s.urls.includes('turn:')) ? 'Secure' : 'Basic'}
+                        </span>
+                    </div>
+
                     <button 
                          onClick={() => initiateCall(true)}
                          className="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full transition-colors text-indigo-500"
