@@ -1,7 +1,8 @@
 import { useState, useContext } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
-import { User, Mail, Lock, Briefcase, IndianRupee, ArrowRight, UserCircle2, Clock, Calendar } from 'lucide-react';
+import { User, Mail, Lock, Briefcase, IndianRupee, ArrowRight, UserCircle2, Clock, Calendar, CheckCircle2 } from 'lucide-react';
+import axios from '../utils/axios';
 import { GoogleLogin } from '@react-oauth/google';
 
 const Register = () => {
@@ -26,6 +27,12 @@ const Register = () => {
       }
     }
   });
+
+  // Verification State
+  const [otpSent, setOtpSent] = useState(false);
+  const [emailVerified, setEmailVerified] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [verifying, setVerifying] = useState(false);
 
   const availableDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
@@ -75,8 +82,49 @@ const Register = () => {
     });
   };
 
+  const handleSendOtp = async () => {
+      if (!formData.email) {
+          setError('Please enter an email address first.');
+          return;
+      }
+      setIsLoading(true);
+      setError('');
+      try {
+          await axios.post('/auth/verify-email/send', { email: formData.email });
+          setOtpSent(true);
+      } catch (err) {
+          setError(err.response?.data?.message || 'Failed to send OTP');
+      } finally {
+          setIsLoading(false);
+      }
+  };
+
+  const handleVerifyOtp = async () => {
+      if (!otp) {
+          setError('Please enter the OTP.');
+          return;
+      }
+      setVerifying(true);
+      setError('');
+      try {
+          await axios.post('/auth/verify-email/validate', { email: formData.email, otp });
+          setEmailVerified(true);
+          setOtpSent(false); // Hide OTP field
+      } catch (err) {
+          setError(err.response?.data?.message || 'Invalid OTP');
+      } finally {
+          setVerifying(false);
+      }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!emailVerified) {
+        setError('Please verify your email address before creating an account.');
+        return;
+    }
+
     setIsLoading(true);
     setError('');
     
@@ -180,9 +228,13 @@ const Register = () => {
           navigate('/dashboard');
       } catch (err) {
           setError(err.message || 'Google Login Failed');
+          setError(err.message || 'Google Login Failed');
           setIsLoading(false);
       }
   };
+  
+  // If verifying email, show OTP related errors directly via 'error' state which is rendered below form header
+  // So no changes needed for error display.
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center p-4">
@@ -257,21 +309,70 @@ const Register = () => {
             
             <div className="space-y-1.5">
               <label className="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide">Email Address</label>
-              <div className="relative group">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400 group-focus-within:text-primary transition-colors" />
-                <input
-                  type="email"
-                  name="email"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:focus:border-primary"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                  placeholder="john@example.com"
-                />
+              
+              <div className="flex gap-2">
+                  <div className="relative flex-1 group">
+                    <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400 group-focus-within:text-primary transition-colors" />
+                    <input
+                      type="email"
+                      name="email"
+                      className={`w-full pl-10 pr-4 py-2.5 rounded-lg border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:focus:border-primary ${emailVerified ? 'border-green-500 bg-green-50 dark:bg-green-900/20' : 'border-gray-200'}`}
+                      value={formData.email}
+                      onChange={(e) => {
+                          handleChange(e);
+                          if(emailVerified) setEmailVerified(false);
+                          if(otpSent) setOtpSent(false);
+                      }}
+                      required
+                      placeholder="john@example.com"
+                      readOnly={emailVerified}
+                    />
+                  </div>
+
+                  {emailVerified ? (
+                      <div className="flex items-center justify-center text-green-600 font-bold text-sm bg-green-100 dark:bg-green-900/30 px-4 rounded-lg border border-green-200 dark:border-green-800 shrink-0">
+                          <CheckCircle2 size={18} className="mr-1.5" />
+                          Verified
+                      </div>
+                  ) : (
+                      <button
+                        type="button"
+                        onClick={handleSendOtp}
+                        disabled={isLoading || !formData.email}
+                        className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-5 rounded-lg font-bold text-sm transition-colors whitespace-nowrap shadow-sm shrink-0"
+                      >
+                          {isLoading ? 'Sending...' : 'Verify'}
+                      </button>
+                  )}
               </div>
+              
+              {/* OTP Input */}
+              {otpSent && !emailVerified && (
+                  <div className="mt-2 animate-in fade-in slide-in-from-top-1">
+                      <div className="flex gap-2">
+                        <input
+                            type="text"
+                            value={otp}
+                            onChange={(e) => setOtp(e.target.value)}
+                            placeholder="Enter 6-digit OTP"
+                            className="flex-1 px-4 py-2.5 rounded-lg border border-gray-200 focus:border-primary outline-none bg-white dark:bg-gray-800 dark:text-white dark:border-gray-700"
+                            maxLength={6}
+                        />
+                        <button
+                            type="button"
+                            onClick={handleVerifyOtp}
+                            disabled={verifying}
+                            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-lg font-bold text-sm transition-colors"
+                        >
+                            {verifying ? '...' : 'Confirm'}
+                        </button>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1 ml-1">Check your email inbox for the code.</p>
+                  </div>
+              )}
             </div>
             
-            <div className="space-y-1.5">
+            <div className={`space-y-1.5 transition-opacity duration-300 ${!emailVerified ? 'opacity-50 pointer-events-none grayscale' : ''}`}>
               <label className="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide">Password</label>
               <div className="relative group">
                 <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400 group-focus-within:text-primary transition-colors" />
@@ -283,12 +384,13 @@ const Register = () => {
                   onChange={handleChange}
                   required
                   placeholder="••••••••"
+                  disabled={!emailVerified}
                 />
               </div>
             </div>
 
             {formData.role === 'expert' && (
-              <div className="bg-indigo-50 dark:bg-indigo-900/10 p-4 rounded-lg space-y-3 border border-indigo-100 dark:border-indigo-900/30 animate-in fade-in slide-in-from-top-4 duration-300">
+              <div className={`bg-indigo-50 dark:bg-indigo-900/10 p-4 rounded-lg space-y-3 border border-indigo-100 dark:border-indigo-900/30 animate-in fade-in slide-in-from-top-4 duration-300 transition-opacity ${!emailVerified ? 'opacity-50 pointer-events-none grayscale' : ''}`}>
                 <h4 className="font-bold text-indigo-900 dark:text-indigo-300 text-xs uppercase tracking-wide">Expert Profile Details</h4>
                 <div className="space-y-1.5">
                   <label className="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide">Specialization <span className="text-red-500">*</span></label>
@@ -403,8 +505,8 @@ const Register = () => {
 
             <button 
               type="submit" 
-              disabled={isLoading}
-              className="w-full bg-primary hover:bg-indigo-700 text-white font-bold py-3 rounded-lg transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center mt-2 text-sm"
+              disabled={isLoading || !emailVerified}
+              className="w-full bg-primary hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-3 rounded-lg transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center mt-2 text-sm"
             >
                {isLoading ? (
                 <span className="animate-pulse">Creating Account...</span>

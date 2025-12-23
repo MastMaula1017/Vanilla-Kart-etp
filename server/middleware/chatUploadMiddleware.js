@@ -18,12 +18,22 @@ const storage = new CloudinaryStorage({
       const extMap = {
           'application/pdf': 'pdf',
           'application/msword': 'doc',
-          'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx'
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+          'application/vnd.ms-powerpoint': 'ppt',
+          'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'pptx',
+          'application/vnd.ms-excel': 'xls',
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'xlsx',
+          'text/plain': 'txt',
+          'application/zip': 'zip',
+          'application/x-zip-compressed': 'zip'
       };
+      
+      const ext = extMap[file.mimetype] || file.originalname.split('.').pop() || 'bin';
+      
       return {
         folder: 'chat_media',
         resource_type: 'raw',
-        public_id: `${file.originalname.split('.')[0].replace(/[^a-zA-Z0-9]/g, '_')}_${Date.now()}.${extMap[file.mimetype]}`,
+        public_id: `${file.originalname.split('.')[0].replace(/[^a-zA-Z0-9]/g, '_')}_${Date.now()}.${ext}`,
       };
     }
   },
