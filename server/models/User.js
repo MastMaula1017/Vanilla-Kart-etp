@@ -7,11 +7,12 @@ const userSchema = new mongoose.Schema({
   googleId: { type: String },
   profileImage: { type: String, default: '' },
   coverImage: { type: String, default: '' },
-  roles: { 
+    roles: { 
     type: [String], 
     enum: ['customer', 'expert', 'admin', 'inquiry_support', 'moderator'], 
     default: ['customer'] 
   },
+  hasSeenOnboarding: { type: Boolean, default: false },
   // Expert specific fields
   expertProfile: {
     specialization: { type: String }, // e.g., Finance, Education

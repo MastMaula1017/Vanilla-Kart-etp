@@ -107,4 +107,83 @@ const updateExpertProfile = async (req, res) => {
   }
 };
 
-module.exports = { getExperts, getExpertById, updateExpertProfile };
+// @desc    AI Matchmaker - Suggest experts based on problem description
+// @route   POST /api/experts/match
+// @access  Public
+const matchExperts = async (req, res) => {
+  try {
+    const { problem, category, budget } = req.body;
+    
+    // 1. Base Query: Get Active Experts
+    let query = { roles: 'expert' };
+    
+    // Optional hard filter for category if user is very specific, 
+    // but for AI match we usually prefer soft matching (scoring) unless explicitly selected.
+    // If 'category' is provided from a dropdown, we can use it as a booster or hard filter.
+    // Let's use it as a booster in scoring, but fetch broad set first.
+    
+    // Fetch all experts to process in memory (assuming expert count < 1000 for now)
+    // For scale, we'd use MongoDB text search ($text).
+    const experts = await User.find(query).select('-password');
+    
+    // 2. Scoring Logic
+    const scoredExperts = experts.map(expert => {
+        let score = 0;
+        const profile = expert.expertProfile || {};
+        const specialization = profile.specialization?.toLowerCase() || '';
+        const bio = profile.bio?.toLowerCase() || '';
+        const userProblem = problem?.toLowerCase() || '';
+        const userCategory = category?.toLowerCase() || '';
+        
+        // A. Category Match (High Weight)
+        if (userCategory && specialization.includes(userCategory)) {
+            score += 20;
+        } else if (userCategory && bio.includes(userCategory)) {
+            score += 10;
+        }
+        
+        // B. Keyword Matching in Bio/Specialization
+        // Split problem into keywords (remove common stopwords if we wanted to be fancy)
+        const keywords = userProblem.split(' ').filter(word => word.length > 3);
+        
+        keywords.forEach(word => {
+            if (specialization.includes(word)) score += 5;
+            if (bio.includes(word)) score += 3;
+        });
+        
+        // C. Rating Boost
+        if (profile.averageRating >= 4.5) score += 5;
+        else if (profile.averageRating >= 4.0) score += 2;
+        
+        // D. Budget Fit (If budget provided)
+        // budget might be "low" (<500), "medium" (500-1500), "high" (>1500) or a number
+        const rate = profile.hourlyRate || 0;
+        if (budget) {
+            if (budget === 'low' && rate <= 500) score += 10;
+            else if (budget === 'medium' && rate > 500 && rate <= 1500) score += 10;
+            else if (budget === 'high' && rate > 1500) score += 10;
+            // Penalize slightly if way out of range? No, just don't boost.
+        }
+
+        return {
+            ...expert.toObject(),
+            matchScore: score,
+            matchReason: score > 10 ? 'High relevance to your needs' : 'Potential match'
+        };
+    });
+    
+    // 3. Sort and Filter
+    const recommendations = scoredExperts
+        .filter(e => e.matchScore > 0) // Only return relevant ones
+        .sort((a, b) => b.matchScore - a.matchScore)
+        .slice(0, 3); // Top 3
+        
+    res.json(recommendations);
+    
+  } catch (error) {
+    console.error("Matchmaker Error:", error);
+    res.status(500).json({ message: 'Error processing match' });
+  }
+};
+
+module.exports = { getExperts, getExpertById, updateExpertProfile, matchExperts };

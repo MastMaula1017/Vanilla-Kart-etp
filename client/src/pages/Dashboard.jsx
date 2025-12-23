@@ -11,9 +11,10 @@ import {
   Check, 
   X, 
   AlertCircle,
-  LayoutDashboard,
-  CreditCard
+  CreditCard,
+  LayoutDashboard
 } from 'lucide-react';
+import OnboardingTour from '../components/OnboardingTour';
 
 const Dashboard = () => {
   const { user } = useContext(AuthContext);
@@ -78,7 +79,8 @@ const Dashboard = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="flex items-center space-x-4 mb-8">
+      <OnboardingTour />
+      <div className="flex items-center space-x-4 mb-8" id="tour-dashboard-title">
         <div className="p-3 bg-violet-100 dark:bg-violet-900/30 rounded-2xl">
            <LayoutDashboard className="text-violet-600 dark:text-violet-400" size={32} />
         </div>

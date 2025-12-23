@@ -49,6 +49,7 @@ const Navbar = () => {
                       <Link 
                           key={link.path}
                           to={link.path} 
+                          id={link.path === '/experts' ? 'tour-experts-link' : undefined}
                           className="text-sm font-medium text-gray-600 hover:text-primary dark:text-gray-300 dark:hover:text-white transition-colors"
                       >
                           {link.name}
@@ -62,7 +63,7 @@ const Navbar = () => {
                   {user ? (
                       <div className="flex items-center space-x-4">
                           <NotificationDropdown />
-                          <div className="relative">
+                          <div className="relative" id="tour-profile-menu">
                               <button 
                                   onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
                                   className="flex items-center space-x-2 focus:outline-none"

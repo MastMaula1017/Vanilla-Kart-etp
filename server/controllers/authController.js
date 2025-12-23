@@ -498,6 +498,35 @@ const uploadVerificationDocument = async (req, res) => {
 };
 
 
+// @desc    Mark onboarding as seen
+// @route   PUT /api/auth/onboarding-seen
+// @access  Private
+const markOnboardingSeen = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+
+    if (user) {
+      user.hasSeenOnboarding = true;
+      const updatedUser = await user.save();
+      
+      // Return updated user info without sensitive data
+      res.json({
+        _id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        roles: updatedUser.roles,
+        expertProfile: updatedUser.expertProfile,
+        hasSeenOnboarding: updatedUser.hasSeenOnboarding
+      });
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
 module.exports = {
   registerUser,
   loginUser,
@@ -511,6 +540,7 @@ module.exports = {
   uploadCoverPhoto,
   googleLogin,
   uploadVerificationDocument,
-  logoutUser
+  logoutUser,
+  markOnboardingSeen
 };
 

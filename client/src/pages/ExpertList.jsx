@@ -3,11 +3,13 @@ import axios from '../utils/axios';
 import { Link } from 'react-router-dom';
 import SpotlightCard from '../components/SpotlightCard';
 import WordRotate from '../components/magicui/WordRotate';
-import { Search, MapPin, Star, ArrowRight, CheckCircle, Filter, X } from 'lucide-react';
+import { Search, MapPin, Star, ArrowRight, CheckCircle, Filter, X, Sparkles } from 'lucide-react';
+import AiMatchmaker from '../components/AiMatchmaker';
 
 const ExpertList = () => {
   const [experts, setExperts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isMatchmakerOpen, setIsMatchmakerOpen] = useState(false);
   
   // Search state
   const [searchTerm, setSearchTerm] = useState('');
@@ -205,6 +207,7 @@ const ExpertList = () => {
           </div>
         </div>
 
+
         {/* Results Grid - Full Width */}
         <div className="w-full">
 
@@ -295,6 +298,21 @@ const ExpertList = () => {
                 </div>
              )}
       </div>
+
+       {/* Floating AI Matchmaker Button */}
+       <div className="fixed bottom-6 right-6 z-40">
+            <button 
+                onClick={() => setIsMatchmakerOpen(!isMatchmakerOpen)}
+                className="group flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-4 rounded-full shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300"
+            >
+                <div className="p-1 bg-white/20 rounded-full group-hover:rotate-12 transition-transform">
+                    <Sparkles size={20} />
+                </div>
+                <span className="font-bold pr-1">Help Me Choose</span>
+            </button>
+       </div>
+
+       <AiMatchmaker isOpen={isMatchmakerOpen} onClose={() => setIsMatchmakerOpen(false)} />
     </div>
   );
 };
