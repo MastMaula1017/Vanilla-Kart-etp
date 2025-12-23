@@ -45,16 +45,26 @@ const Navbar = () => {
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-8">
                <div className="flex space-x-6">
-                  {navLinks.map(link => (
-                      <Link 
-                          key={link.path}
-                          to={link.path} 
-                          id={link.path === '/experts' ? 'tour-experts-link' : undefined}
-                          className="text-sm font-medium text-gray-600 hover:text-primary dark:text-gray-300 dark:hover:text-white transition-colors"
-                      >
-                          {link.name}
-                      </Link>
-                  ))}
+                  {navLinks.map(link => {
+                      const isActive = link.path === '/' 
+                        ? location.pathname === '/'
+                        : location.pathname.startsWith(link.path);
+                      
+                      return (
+                        <Link 
+                            key={link.path}
+                            to={link.path} 
+                            id={link.path === '/experts' ? 'tour-experts-link' : undefined}
+                            className={`text-sm transition-colors ${
+                              isActive 
+                                ? 'font-bold text-primary' 
+                                : 'font-medium text-gray-600 hover:text-primary dark:text-gray-300 dark:hover:text-white'
+                            }`}
+                        >
+                            {link.name}
+                        </Link>
+                      );
+                  })}
                </div>
 
               <div className="flex items-center space-x-4 pl-4 border-l border-gray-200 dark:border-gray-700">
@@ -176,16 +186,26 @@ const Navbar = () => {
 
             <div className="space-y-2">
                 <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Menu</p>
-                {navLinks.map(link => (
-                    <Link 
-                        key={link.path}
-                        to={link.path}
-                        className="flex items-center justify-between p-3 rounded-xl text-lg font-medium text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors"
-                    >
-                        {link.name}
-                        <ChevronDown size={16} className="-rotate-90 text-gray-400" />
-                    </Link>
-                ))}
+                {navLinks.map(link => {
+                    const isActive = link.path === '/' 
+                      ? location.pathname === '/'
+                      : location.pathname.startsWith(link.path);
+                    
+                    return (
+                        <Link 
+                            key={link.path}
+                            to={link.path}
+                            className={`flex items-center justify-between p-3 rounded-xl text-lg font-medium transition-colors ${
+                                isActive
+                                  ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/20 dark:text-indigo-400'
+                                  : 'text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-900'
+                            }`}
+                        >
+                            {link.name}
+                            <ChevronDown size={16} className={`text-gray-400 ${isActive ? '-rotate-90' : ''}`} />
+                        </Link>
+                    );
+                })}
             </div>
 
             {user ? (

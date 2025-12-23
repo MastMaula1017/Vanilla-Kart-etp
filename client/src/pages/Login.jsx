@@ -45,58 +45,7 @@ const Login = () => {
     <div className="min-h-[70vh] flex items-center justify-center p-4">
       <div className="w-full max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden grid grid-cols-1 md:grid-cols-2 border border-gray-100 dark:bg-gray-900 dark:border-gray-800 transition-colors duration-300">
         
-        {/* Left Side: Visual/Branding */}
-        <div className="relative hidden md:flex flex-col justify-start p-10 bg-zinc-900 text-white overflow-hidden min-h-[500px]">
-           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-zinc-800 via-zinc-950 to-black opacity-90"></div>
-           <div className="absolute top-0 left-0 w-full h-full bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150"></div>
-           
-           <div className="relative z-10 mb-8">
-             <h2 className="text-3xl font-bold mb-2">Welcome back!</h2>
-             <p className="text-zinc-400 text-base">
-               Your gateway to expert advice.
-             </p>
-           </div>
-           
-           {/* Card Swap Animation */}
-           <div className="relative w-full h-full flex-grow z-20 scale-90 origin-top-left">
-             <CardSwap
-                cardDistance={40}
-                verticalDistance={30}
-                delay={4000}
-                pauseOnHover={true}
-                width={240}
-                height={280}
-              >
-                <Card className="bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl transition-all duration-300 hover:scale-[1.02] hover:border-white/30 group">
-                  <div className="bg-white/10 p-3 rounded-full mb-4 group-hover:bg-white/20 transition-colors">
-                    <Video size={32} className="text-white" />
-                  </div>
-                  <h3 className="text-lg font-bold mb-2 text-white">Instant Video</h3>
-                  <p className="text-xs text-zinc-300">Connect 1:1 with verified experts instantly.</p>
-                </Card>
-                <Card className="bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl transition-all duration-300 hover:scale-[1.02] hover:border-white/30 group">
-                  <div className="bg-white/10 p-3 rounded-full mb-4 group-hover:bg-white/20 transition-colors">
-                     <ShieldCheck size={32} className="text-white" />
-                  </div>
-                  <h3 className="text-lg font-bold mb-2 text-white">Verified Pros</h3>
-                  <p className="text-xs text-zinc-300">Every expert is vetted for quality and skill.</p>
-                </Card>
-                <Card className="bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl transition-all duration-300 hover:scale-[1.02] hover:border-white/30 group">
-                   <div className="bg-white/10 p-3 rounded-full mb-4 group-hover:bg-white/20 transition-colors">
-                     <CreditCard size={32} className="text-white" />
-                   </div>
-                  <h3 className="text-lg font-bold mb-2 text-white">Secure Pay</h3>
-                  <p className="text-xs text-zinc-300">Your transactions are safe and encrypted.</p>
-                </Card>
-              </CardSwap>
-           </div>
-
-           {/* Decorative Circles */}
-           <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-zinc-500 rounded-full mix-blend-overlay filter blur-[100px] opacity-20 animate-blob"></div>
-           <div className="absolute -top-24 -right-24 w-64 h-64 bg-zinc-400 rounded-full mix-blend-overlay filter blur-[100px] opacity-20 animate-blob animation-delay-2000"></div>
-        </div>
-
-        {/* Right Side: Form */}
+        {/* Left Side: Form */}
         <div className="p-8 md:p-10 flex flex-col justify-center">
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">Login</h1>
@@ -204,6 +153,57 @@ const Login = () => {
                 />
              </div>
           </div>
+        </div>
+
+        {/* Right Side: Visual/Branding */}
+        <div className="relative hidden md:flex flex-col justify-start p-10 bg-zinc-900 text-white overflow-hidden min-h-[500px]">
+           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-zinc-800 via-zinc-950 to-black opacity-90"></div>
+           <div className="absolute top-0 left-0 w-full h-full bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150"></div>
+           
+           <div className="relative z-10 mb-8">
+             <h2 className="text-3xl font-bold mb-2">Welcome back!</h2>
+             <p className="text-zinc-400 text-base">
+               Your gateway to expert advice.
+             </p>
+           </div>
+           
+           {/* Card Swap Animation */}
+           <div className="relative w-full h-full flex-grow z-20 scale-90 origin-top-left">
+             <CardSwap
+                cardDistance={40}
+                verticalDistance={30}
+                delay={4000}
+                pauseOnHover={true}
+                width={240}
+                height={280}
+              >
+                <Card className="bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl transition-all duration-300 hover:scale-[1.02] hover:border-white/30 group">
+                  <div className="bg-white/10 p-3 rounded-full mb-4 group-hover:bg-white/20 transition-colors">
+                    <Video size={32} className="text-white" />
+                  </div>
+                  <h3 className="text-lg font-bold mb-2 text-white">Instant Video</h3>
+                  <p className="text-xs text-zinc-300">Connect 1:1 with verified experts instantly.</p>
+                </Card>
+                <Card className="bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl transition-all duration-300 hover:scale-[1.02] hover:border-white/30 group">
+                  <div className="bg-white/10 p-3 rounded-full mb-4 group-hover:bg-white/20 transition-colors">
+                     <ShieldCheck size={32} className="text-white" />
+                  </div>
+                  <h3 className="text-lg font-bold mb-2 text-white">Verified Pros</h3>
+                  <p className="text-xs text-zinc-300">Every expert is vetted for quality and skill.</p>
+                </Card>
+                <Card className="bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl transition-all duration-300 hover:scale-[1.02] hover:border-white/30 group">
+                   <div className="bg-white/10 p-3 rounded-full mb-4 group-hover:bg-white/20 transition-colors">
+                     <CreditCard size={32} className="text-white" />
+                   </div>
+                  <h3 className="text-lg font-bold mb-2 text-white">Secure Pay</h3>
+                  <p className="text-xs text-zinc-300">Your transactions are safe and encrypted.</p>
+                </Card>
+              </CardSwap>
+           </div>
+
+           {/* Decorative Circles */}
+           <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-zinc-500 rounded-full mix-blend-overlay filter blur-[100px] opacity-20 animate-blob"></div>
+           <div className="absolute -top-24 -right-24 w-64 h-64 bg-zinc-400 rounded-full mix-blend-overlay filter blur-[100px] opacity-20 animate-blob animation-delay-2000"></div>
         </div>
       </div>
     </div>

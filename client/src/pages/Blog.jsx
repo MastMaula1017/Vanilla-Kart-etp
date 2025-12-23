@@ -12,7 +12,7 @@ const Blog = () => {
                 </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {blogPosts.map((post, index) => (
                     <div
                         key={index}
@@ -25,9 +25,9 @@ const Blog = () => {
                                 className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                             />
                         </div>
-                        <div className="p-8">
-                            <div className="flex items-center justify-between mb-4">
-                                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400">
+                        <div className="p-6">
+                            <div className="flex items-center justify-between mb-3">
+                                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400">
                                     {post.category}
                                 </span>
                                 <div className="flex items-center text-xs text-gray-500">
@@ -36,24 +36,24 @@ const Blog = () => {
                                 </div>
                             </div>
 
-                            <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-indigo-600 transition-colors dark:text-white dark:group-hover:text-indigo-400">
+                            <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-indigo-600 transition-colors dark:text-white dark:group-hover:text-indigo-400 line-clamp-2 leading-tight">
                                 <Link to={`/blog/${post.id}`}>
                                     {post.title}
                                 </Link>
                             </h3>
-                            <p className="text-gray-600 mb-6 line-clamp-2 dark:text-gray-400">
+                            <p className="text-gray-600 mb-4 line-clamp-2 text-sm dark:text-gray-400">
                                 {post.excerpt}
                             </p>
 
-                            <div className="flex items-center justify-between pt-6 border-t border-gray-100 dark:border-gray-800">
+                            <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-800">
                                 <div className="flex items-center">
-                                    <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center mr-3 text-gray-500">
-                                        <User size={16} />
+                                    <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center mr-2 text-gray-500">
+                                        <User size={12} />
                                     </div>
-                                    <span className="text-sm font-medium text-gray-900 dark:text-white">{post.author}</span>
+                                    <span className="text-xs font-medium text-gray-900 dark:text-white">{post.author}</span>
                                 </div>
-                                <Link to={`/blog/${post.id}`} className="text-indigo-600 font-semibold text-sm flex items-center group-hover:translate-x-1 transition-transform cursor-pointer dark:text-indigo-400">
-                                    Read More <ArrowRight size={16} className="ml-1" />
+                                <Link to={`/blog/${post.id}`} className="text-indigo-600 font-bold text-xs flex items-center group-hover:translate-x-1 transition-transform cursor-pointer dark:text-indigo-400">
+                                    Read More <ArrowRight size={14} className="ml-1" />
                                 </Link>
                             </div>
                         </div>

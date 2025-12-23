@@ -42,6 +42,9 @@ import { SocketProvider } from './context/SocketContext';
 import { Toaster } from 'react-hot-toast';
 import GlobalScratcher from './components/GlobalScratcher';
 
+import { AnimatePresence } from 'framer-motion';
+import PageTransition from './components/PageTransition';
+
 function App() {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
@@ -66,48 +69,49 @@ function App() {
        <ScrollToTop />
        {!isAdminRoute && <Navbar />}
       <div className={`${isFullWidthNode ? '' : 'container mx-auto px-4 py-8'} flex-grow`}>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/pricing" element={<Pricing />} />
-          <Route path="/get-the-app" element={<GetTheApp />} />
-          <Route path="/privacy" element={<Privacy />} />
-          <Route path="/terms" element={<Terms />} />
-          <Route path="/blog" element={<Blog />} />
-          <Route path="/blog/:id" element={<BlogPost />} />
-          <Route path="/become-expert" element={<BecomeExpert />} />
-          <Route path="/careers" element={<Careers />} />
-          <Route path="/cookie-policy" element={<CookiePolicy />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/experts" element={<ExpertList />} />
-          <Route path="/experts/:id" element={<ExpertProfile />} />
-          <Route path="/maintenance" element={<Maintenance />} />
+        <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
+          <Route path="/" element={<PageTransition><Home /></PageTransition>} />
+          <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
+          <Route path="/register" element={<PageTransition><Register /></PageTransition>} />
+          <Route path="/forgot-password" element={<PageTransition><ForgotPassword /></PageTransition>} />
+          <Route path="/reset-password" element={<PageTransition><ResetPassword /></PageTransition>} />
+          <Route path="/about" element={<PageTransition><About /></PageTransition>} />
+          <Route path="/pricing" element={<PageTransition><Pricing /></PageTransition>} />
+          <Route path="/get-the-app" element={<PageTransition><GetTheApp /></PageTransition>} />
+          <Route path="/privacy" element={<PageTransition><Privacy /></PageTransition>} />
+          <Route path="/terms" element={<PageTransition><Terms /></PageTransition>} />
+          <Route path="/blog" element={<PageTransition><Blog /></PageTransition>} />
+          <Route path="/blog/:id" element={<PageTransition><BlogPost /></PageTransition>} />
+          <Route path="/become-expert" element={<PageTransition><BecomeExpert /></PageTransition>} />
+          <Route path="/careers" element={<PageTransition><Careers /></PageTransition>} />
+          <Route path="/cookie-policy" element={<PageTransition><CookiePolicy /></PageTransition>} />
+          <Route path="/contact" element={<PageTransition><Contact /></PageTransition>} />
+          <Route path="/experts" element={<PageTransition><ExpertList /></PageTransition>} />
+          <Route path="/experts/:id" element={<PageTransition><ExpertProfile /></PageTransition>} />
+          <Route path="/maintenance" element={<PageTransition><Maintenance /></PageTransition>} />
           
           <Route path="/expert/payments" element={
             <ProtectedRoute>
-              <ExpertPayments />
+              <PageTransition><ExpertPayments /></PageTransition>
             </ProtectedRoute>
           } />
 
           <Route path="/dashboard" element={
             <ProtectedRoute>
-              <Dashboard />
+              <PageTransition><Dashboard /></PageTransition>
             </ProtectedRoute>
           } />
           
           <Route path="/profile" element={
             <ProtectedRoute>
-              <ProfilePage />
+              <PageTransition><ProfilePage /></PageTransition>
             </ProtectedRoute>
           } />
 
           <Route path="/chat/:userId" element={
             <ProtectedRoute>
-              <ChatPage />
+              <PageTransition><ChatPage /></PageTransition>
             </ProtectedRoute>
           } />
 
@@ -118,44 +122,45 @@ function App() {
             </ProtectedRoute>
           }>
             {/* Dashboard - Accessible to both (or restrict if needed) */}
-            <Route index element={<AdminDashboard />} />
+            <Route index element={<PageTransition><AdminDashboard /></PageTransition>} />
 
             {/* Inquiries - Accessible to both */}
-            <Route path="inquiries" element={<AdminInquiries />} />
+            <Route path="inquiries" element={<PageTransition><AdminInquiries /></PageTransition>} />
 
             {/* User Management - Admin Only */}
             <Route path="users" element={
               <ProtectedRoute allowedRoles={['admin', 'moderator']}>
-                <AdminUsers />
+                <PageTransition><AdminUsers /></PageTransition>
               </ProtectedRoute>
             } />
             <Route path="experts" element={
               <ProtectedRoute allowedRoles={['admin', 'moderator']}>
-                <AdminExperts />
+                <PageTransition><AdminExperts /></PageTransition>
               </ProtectedRoute>
             } />
             <Route path="coupons" element={
               <ProtectedRoute allowedRoles={['admin']}>
-                <AdminCoupons />
+                <PageTransition><AdminCoupons /></PageTransition>
               </ProtectedRoute>
             } />
             <Route path="earnings" element={
               <ProtectedRoute allowedRoles={['admin']}>
-                <AdminEarnings />
+                <PageTransition><AdminEarnings /></PageTransition>
               </ProtectedRoute>
             } />
             <Route path="verifications" element={
               <ProtectedRoute allowedRoles={['admin', 'moderator']}>
-                <AdminVerification />
+                <PageTransition><AdminVerification /></PageTransition>
               </ProtectedRoute>
             } />
             <Route path="announcements" element={
               <ProtectedRoute allowedRoles={['admin', 'moderator']}>
-                <AdminAnnouncements />
+                <PageTransition><AdminAnnouncements /></PageTransition>
               </ProtectedRoute>
             } />
           </Route>
         </Routes>
+        </AnimatePresence>
       </div>
       </SocketProvider>
       <Footer />

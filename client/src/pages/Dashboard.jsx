@@ -12,9 +12,12 @@ import {
   X, 
   AlertCircle,
   CreditCard,
-  LayoutDashboard
+  LayoutDashboard,
+  Search
 } from 'lucide-react';
 import OnboardingTour from '../components/OnboardingTour';
+import { DashboardSkeleton } from '../components/Skeleton';
+import toast from 'react-hot-toast';
 
 const Dashboard = () => {
   const { user } = useContext(AuthContext);
@@ -28,6 +31,7 @@ const Dashboard = () => {
         setAppointments(data);
       } catch (error) {
         console.error(error);
+        toast.error('Failed to load appointments');
       } finally {
         setLoading(false);
       }
@@ -41,8 +45,10 @@ const Dashboard = () => {
       setAppointments(appointments.map(app => 
          app._id === id ? { ...app, status } : app
       ));
+      toast.success(`Appointment ${status} successfully`);
     } catch (error) {
       console.error('Error updating status');
+      toast.error('Failed to update status');
     }
   };
 
@@ -64,16 +70,16 @@ const Dashboard = () => {
     const Icon = icons[status] || AlertCircle;
 
     return (
-      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${styles[status] || 'bg-gray-100 text-gray-700'}`}>
-        <Icon size={12} className="mr-1.5" />
-        {status.charAt(0).toUpperCase() + status.slice(1)}
+      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border ${styles[status] || 'bg-gray-100 text-gray-700'}`}>
+        <Icon size={10} className="mr-1" />
+        {status}
       </span>
     );
   };
 
   if (loading) return (
-    <div className="flex items-center justify-center min-h-screen">
-       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-violet-500"></div>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <DashboardSkeleton />
     </div>
   );
 
@@ -111,14 +117,30 @@ const Dashboard = () => {
         </div>
 
         {appointments.length === 0 ? (
-          <div className="p-12 text-center">
-            <div className="inline-block p-4 rounded-full bg-gray-100 dark:bg-gray-700 mb-4">
-               <Calendar size={48} className="text-gray-400" />
+          <div className="p-16 flex flex-col items-center justify-center text-center">
+            <div className="relative mb-6">
+                <div className="absolute inset-0 bg-violet-200 dark:bg-violet-900/40 rounded-full blur-xl opacity-50"></div>
+                <div className="relative w-24 h-24 bg-violet-100 dark:bg-violet-900/50 rounded-full flex items-center justify-center border-4 border-white dark:border-gray-800 shadow-xl">
+                    <Calendar size={40} className="text-violet-600 dark:text-violet-400" />
+                </div>
+                <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center border-4 border-gray-50 dark:border-gray-800 shadow-lg">
+                    <Search size={18} className="text-gray-400" />
+                </div>
             </div>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white">No appointments yet</h3>
-            <p className="text-gray-500 dark:text-gray-400 mt-2">Book a session with an expert to get started.</p>
-            <Link to="/experts" className="mt-6 inline-block px-6 py-3 bg-violet-600 text-white font-medium rounded-xl hover:bg-violet-700 transition-all shadow-lg hover:shadow-violet-500/30">
-              Find an Expert
+            
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">No appointments yet</h3>
+            <p className="text-gray-500 dark:text-gray-400 max-w-sm mb-8 leading-relaxed">
+                Your schedule is looking clear. Ready to accelerate your learning? Connect with an expert today.
+            </p>
+            
+            <Link 
+                to="/experts" 
+                className="group relative inline-flex items-center justify-center px-8 py-3.5 bg-violet-600 text-white font-bold rounded-2xl overflow-hidden transition-all hover:bg-violet-700 shadow-lg hover:shadow-violet-500/40"
+            >
+                <span className="relative z-10 flex items-center gap-2">
+                    Find an Expert
+                    <Search size={18} className="transition-transform group-hover:translate-x-1" />
+                </span>
             </Link>
           </div>
         ) : (
@@ -126,10 +148,10 @@ const Dashboard = () => {
             <table className="w-full text-left">
               <thead>
                 <tr className="bg-gray-50/50 dark:bg-gray-900/50 text-gray-400 dark:text-gray-500 text-xs uppercase tracking-wider font-medium">
-                  <th className="p-6">Date & Time</th>
-                  <th className="p-6">With</th>
-                  <th className="p-6">Status</th>
-                  <th className="p-6 text-right">Actions</th>
+                  <th className="p-4 pl-6">Date & Time</th>
+                  <th className="p-4">With</th>
+                  <th className="p-4">Status</th>
+                  <th className="p-4 pr-6 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
@@ -139,43 +161,43 @@ const Dashboard = () => {
 
                   return (
                   <tr key={app._id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors group">
-                    <td className="p-6">
+                    <td className="p-4 pl-6">
                       <div className="flex flex-col space-y-1">
-                        <div className="flex items-center text-gray-900 dark:text-white font-semibold">
-                           <Calendar size={16} className="mr-2 text-violet-500" />
+                        <div className="flex items-center text-gray-900 dark:text-white font-bold text-sm">
+                           <Calendar size={14} className="mr-2 text-violet-500" />
                            {new Date(app.date).toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}
                         </div>
-                        <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                           <Clock size={14} className="mr-2" />
+                        <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 font-medium">
+                           <Clock size={12} className="mr-1.5" />
                            {app.startTime} - {app.endTime}
                         </div>
                       </div>
                     </td>
-                    <td className="p-6">
+                    <td className="p-4">
                       <div className="flex items-center">
-                        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                        <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center text-white font-bold text-sm shadow-md">
                            {counterpart?.name?.charAt(0) || '?'}
                         </div>
-                        <div className="ml-4">
-                          <div className="text-gray-900 dark:text-white font-semibold">{counterpart?.name || 'Unknown'}</div>
-                          <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                             <Mail size={12} className="mr-1.5" />
+                        <div className="ml-3">
+                          <div className="text-gray-900 dark:text-white font-bold text-sm">{counterpart?.name || 'Unknown'}</div>
+                          <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 font-medium">
+                             <Mail size={10} className="mr-1" />
                              {counterpart?.email || 'No email'}
                           </div>
                         </div>
                       </div>
                     </td>
-                    <td className="p-6">
+                    <td className="p-4">
                       <StatusBadge status={app.status} />
                     </td>
-                    <td className="p-6 text-right">
-                       <div className="flex items-center justify-end space-x-3 opacity-80 group-hover:opacity-100 transition-opacity">
+                    <td className="p-4 pr-6 text-right">
+                       <div className="flex items-center justify-end space-x-2 opacity-80 group-hover:opacity-100 transition-opacity">
                            {/* Chat Button */}
                            <Link 
                              to={`/chat/${counterpart?._id}`}
-                             className="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all font-medium text-sm shadow-sm hover:shadow-md"
+                             className="inline-flex items-center px-3 py-1.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-all font-bold text-xs shadow-sm"
                            >
-                             <MessageSquare size={16} className="mr-2 text-violet-500" />
+                             <MessageSquare size={14} className="mr-1.5 text-violet-500" />
                              Chat
                            </Link>
 
@@ -184,16 +206,16 @@ const Dashboard = () => {
                              <>
                                <button 
                                  onClick={() => handleStatusUpdate(app._id, 'confirmed')}
-                                 className="inline-flex items-center px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-all font-medium text-sm shadow-md hover:shadow-green-500/30"
+                                 className="inline-flex items-center px-3 py-1.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all font-bold text-xs shadow-md"
                                >
-                                 <Check size={16} className="mr-1.5" />
+                                 <Check size={14} className="mr-1" />
                                  Accept
                                </button>
                                <button 
                                  onClick={() => handleStatusUpdate(app._id, 'cancelled')}
-                                 className="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-800 text-red-500 border border-red-200 dark:border-red-900/30 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 transition-all font-medium text-sm"
+                                 className="inline-flex items-center px-3 py-1.5 bg-white dark:bg-gray-800 text-red-500 border border-red-200 dark:border-red-900/30 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-all font-bold text-xs"
                                >
-                                 <X size={16} className="mr-1.5" />
+                                 <X size={14} className="mr-1" />
                                  Decline
                                </button>
                              </>
@@ -213,3 +235,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+

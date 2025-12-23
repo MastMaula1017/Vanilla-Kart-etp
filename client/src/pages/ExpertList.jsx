@@ -5,6 +5,7 @@ import SpotlightCard from '../components/SpotlightCard';
 import WordRotate from '../components/magicui/WordRotate';
 import { Search, MapPin, Star, ArrowRight, CheckCircle, Filter, X, Sparkles } from 'lucide-react';
 import AiMatchmaker from '../components/AiMatchmaker';
+import { ExpertCardSkeleton } from '../components/Skeleton';
 
 const ExpertList = () => {
   const [experts, setExperts] = useState([]);
@@ -210,11 +211,11 @@ const ExpertList = () => {
 
         {/* Results Grid - Full Width */}
         <div className="w-full">
-
-
              {loading ? (
-                <div className="min-h-[40vh] flex items-center justify-center">
-                    <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {[1, 2, 3, 4, 5, 6].map((i) => (
+                        <ExpertCardSkeleton key={i} />
+                    ))}
                 </div>
              ) : experts.length === 0 ? (
                 <div className="text-center py-20 bg-gray-50 dark:bg-zinc-900 rounded-3xl border border-dashed border-gray-200 dark:border-zinc-800">
@@ -224,72 +225,69 @@ const ExpertList = () => {
                     </button>
                 </div>
              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {experts.map(expert => (
                     <SpotlightCard key={expert._id} className="h-full flex flex-col group bg-white dark:bg-zinc-900 border border-gray-100 dark:border-white/5 shadow-xl hover:shadow-2xl transition-all duration-300" spotlightColor="rgba(99, 102, 241, 0.15)">
-                        <div className="p-8 flex flex-col h-full relative z-10">
-                        <div className="flex items-start justify-between mb-6">
-                            <div className="flex items-center space-x-4">
+                        <div className="p-6 flex flex-col h-full relative z-10">
+                        <div className="flex items-start justify-between mb-4">
+                            <div className="flex items-center space-x-3">
                             <div className="relative">
                                 {expert.profileImage ? (
                                     <img 
                                         src={expert.profileImage} 
                                         alt={expert.name} 
-                                        className="w-16 h-16 rounded-2xl object-cover object-top shadow-md ring-4 ring-white dark:ring-zinc-900"
+                                        className="w-12 h-12 rounded-xl object-cover object-top shadow-md ring-2 ring-white dark:ring-zinc-900"
                                     />
                                 ) : (
-                                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/50 dark:to-purple-900/50 flex items-center justify-center text-2xl font-bold text-indigo-600 dark:text-indigo-300 shadow-inner ring-4 ring-white dark:ring-zinc-900">
+                                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/50 dark:to-purple-900/50 flex items-center justify-center text-lg font-bold text-indigo-600 dark:text-indigo-300 shadow-inner ring-2 ring-white dark:ring-zinc-900">
                                     {expert.name[0]}
                                     </div>
                                 )}
-                                <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 border-4 border-white dark:border-zinc-900 rounded-full"></div>
+                                <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 border-2 border-white dark:border-zinc-900 rounded-full"></div>
                             </div>
                             <div>
-                                <div className="flex items-center gap-2">
-                                    <h3 className="font-bold text-xl text-gray-900 dark:text-white group-hover:text-indigo-500 transition-colors line-clamp-1">
+                                <div className="flex items-center gap-1.5">
+                                    <h3 className="font-bold text-base text-gray-900 dark:text-white group-hover:text-indigo-500 transition-colors line-clamp-1">
                                         {expert.name}
                                     </h3>
                                     {expert.expertProfile?.verificationStatus === 'verified' && (
                                         <div className="relative group/verify">
-                                            <CheckCircle size={16} className="text-blue-500 fill-blue-500 text-white flex-shrink-0 cursor-help" />
-                                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs font-bold rounded opacity-0 group-hover/verify:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                                                Verified Expert
-                                            </div>
+                                            <CheckCircle size={14} className="text-blue-500 fill-blue-500 text-white flex-shrink-0 cursor-help" />
                                         </div>
                                     )}
                                 </div>
-                                <p className="text-xs font-bold uppercase tracking-wider text-indigo-500 dark:text-indigo-400 mt-1">
+                                <p className="text-[10px] font-bold uppercase tracking-wider text-indigo-500 dark:text-indigo-400 mt-0.5">
                                 {expert.expertProfile.specialization}
                                 </p>
                             </div>
                             </div>
-                            <div className="flex flex-col items-end pl-4">
-                            <span className="font-bold text-xl text-gray-900 dark:text-white">₹{expert.expertProfile.hourlyRate}</span>
-                            <span className="text-xs font-medium text-gray-400">per hour</span>
+                            <div className="flex flex-col items-end pl-2">
+                            <span className="font-bold text-lg text-gray-900 dark:text-white">₹{expert.expertProfile.hourlyRate}</span>
+                            <span className="text-[10px] font-medium text-gray-400">/hr</span>
                             </div>
                         </div>
 
-                        <p className="text-gray-600 dark:text-gray-400 mb-8 line-clamp-2 text-sm leading-relaxed flex-grow font-medium">
+                        <p className="text-gray-600 dark:text-gray-400 mb-6 line-clamp-2 text-sm leading-relaxed flex-grow font-medium">
                             {expert.expertProfile.bio || "Availability for 1:1 mentorship and guidance."}
                         </p>
 
-                        <div className="pt-6 border-t border-gray-100 dark:border-white/5 flex items-center justify-between mt-auto">
-                            <div className="flex items-center space-x-1.5 bg-yellow-50 dark:bg-yellow-900/20 px-3 py-1.5 rounded-lg border border-yellow-100 dark:border-yellow-900/30">
-                            <Star fill="currentColor" className="text-yellow-500" size={14} />
-                            <span className="font-bold text-sm text-yellow-700 dark:text-yellow-500">
+                        <div className="pt-4 border-t border-gray-100 dark:border-white/5 flex items-center justify-between mt-auto">
+                            <div className="flex items-center space-x-1.5 bg-yellow-50 dark:bg-yellow-900/20 px-2 py-1 rounded-lg border border-yellow-100 dark:border-yellow-900/30">
+                            <Star fill="currentColor" className="text-yellow-500" size={12} />
+                            <span className="font-bold text-xs text-yellow-700 dark:text-yellow-500">
                                 {expert.expertProfile?.averageRating || '0.0'}
-                                <span className="ml-1 text-xs text-yellow-600/70 dark:text-yellow-500/70">
-                                    ({expert.expertProfile?.totalReviews || 0} reviews)
+                                <span className="ml-1 text-[10px] text-yellow-600/70 dark:text-yellow-500/70">
+                                    ({expert.expertProfile?.totalReviews || 0})
                                 </span>
                             </span>
                             </div>
                             
                             <Link 
                             to={`/experts/${expert._id}`} 
-                            className="inline-flex items-center space-x-2 text-sm font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors group/link"
+                            className="inline-flex items-center space-x-1 text-sm font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors group/link"
                             >
                             <span>View Profile</span>
-                            <ArrowRight size={16} className="group-hover/link:translate-x-1 transition-transform" />
+                            <ArrowRight size={14} className="group-hover/link:translate-x-1 transition-transform" />
                             </Link>
                         </div>
                         </div>
@@ -318,3 +316,4 @@ const ExpertList = () => {
 };
 
 export default ExpertList;
+
