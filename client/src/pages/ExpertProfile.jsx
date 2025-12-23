@@ -491,6 +491,7 @@ const ExpertProfile = () => {
                         </button>
                     )}
                 </div>
+
                 {discountApplied && (
                     <p className="mt-2 text-sm text-green-600 flex items-center">
                         <CheckCircle size={14} className="mr-1" />
@@ -519,6 +520,7 @@ const ExpertProfile = () => {
             </button>
         </form>
         )}
+
     </div>
   );
 

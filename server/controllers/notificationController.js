@@ -60,8 +60,39 @@ const markAllAsRead = async (req, res) => {
     }
 };
 
+// @desc    Create a notification (Internal/System use mainly)
+// @route   POST /api/notifications
+// @access  Private
+const createNotification = async (req, res) => {
+    try {
+        const { recipient, message, type, link } = req.body;
+
+        const notification = await Notification.create({
+            recipient: recipient || req.user._id, // Default to self if not specified (e.g., self-trigger)
+            message,
+            type: type || 'system',
+            link,
+            sender: req.user._id
+        });
+
+        // Emit socket event if io is available (accessed via req.app.get)
+        const io = req.app.get('io');
+        if (io) {
+            // Emit to specific user room if you have rooms set up, or just broadcast generic
+            // For simplicity in this Setup:
+            io.emit('notification', notification); 
+        }
+
+        res.status(201).json(notification);
+    } catch (error) {
+        console.error("Create Notif Error:", error);
+        res.status(500).json({ message: 'Failed to create notification' });
+    }
+};
+
 module.exports = {
   getUserNotifications,
   markAsRead,
-  markAllAsRead
+  markAllAsRead,
+  createNotification
 };

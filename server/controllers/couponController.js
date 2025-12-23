@@ -84,3 +84,35 @@ exports.verifyCoupon = async (req, res) => {
     res.status(500).json({ message: 'Server Error' });
   }
 };
+
+// Get Random Coupon (For Scratcher)
+exports.getRandomCoupon = async (req, res) => {
+  try {
+    // Find coupons that are:
+    // 1. Active
+    // 2. Not expired
+    // 3. Usage limit not reached (if limit exists)
+    const activeCoupons = await Coupon.find({
+      isActive: true,
+      expirationDate: { $gt: new Date() },
+      usageLimit: null // strict check for unlimited availability
+    });
+
+    if (activeCoupons.length === 0) {
+      return res.status(404).json({ message: 'No coupons available' });
+    }
+
+    // Pick a random coupon
+    const randomIndex = Math.floor(Math.random() * activeCoupons.length);
+    const randomCoupon = activeCoupons[randomIndex];
+
+    res.json({
+      code: randomCoupon.code,
+      discountType: randomCoupon.discountType,
+      value: randomCoupon.value
+    });
+  } catch (error) {
+    console.error("Error fetching random coupon:", error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+};

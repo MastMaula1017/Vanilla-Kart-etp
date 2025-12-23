@@ -8,4 +8,6 @@ router.get('/', protect, authorize('admin'), couponController.getAllCoupons);
 router.delete('/:id', protect, authorize('admin'), couponController.deleteCoupon);
 router.post('/verify', protect, couponController.verifyCoupon);
 
+router.get('/random', couponController.getRandomCoupon);
+
 module.exports = router;

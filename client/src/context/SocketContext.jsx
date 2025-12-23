@@ -15,7 +15,7 @@ export const SocketProvider = ({ children }) => {
   useEffect(() => {
     if (user) {
       const socketIo = io(SOCKET_URL, {
-        transports: ['polling', 'websocket'], // Start with polling (HTTP), upgrade to WS if possible
+        transports: ['polling'], // FORCE HTTP Polling only (bypasses WS blocks)
         withCredentials: true,
         reconnectionAttempts: 5,
         timeout: 20000,

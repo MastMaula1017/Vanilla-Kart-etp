@@ -27,9 +27,14 @@ import ShimmerButton from '@/components/magicui/ShimmerButton';
 
 import WordPullUp from '@/components/magicui/WordPullUp';
 
+import { useState } from 'react';
+import { Gift } from 'lucide-react';
+
+
 const Home = () => {
+
   return (
-    <div className="space-y-24 pb-12 dark:bg-gray-950 transition-colors duration-300">
+    <div className="space-y-24 pb-12 dark:bg-gray-950 transition-colors duration-300 relative">
       {/* 1. Hero Section */}
       <section className="relative overflow-hidden rounded-3xl bg-dark text-white shadow-xl mt-4 dark:border dark:border-gray-800">
         <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 to-purple-700 opacity-90 dark:opacity-80"></div>
@@ -330,6 +335,7 @@ const Home = () => {
            </Link>
          </div>
       </section>
+
     </div>
   );
 };

@@ -40,6 +40,7 @@ import ScrollToTop from './components/ScrollToTop';
 
 import { SocketProvider } from './context/SocketContext';
 import { Toaster } from 'react-hot-toast';
+import GlobalScratcher from './components/GlobalScratcher';
 
 function App() {
   const location = useLocation();
@@ -158,6 +159,7 @@ function App() {
       </div>
       </SocketProvider>
       <Footer />
+      <GlobalScratcher />
     </div>
   );
 }

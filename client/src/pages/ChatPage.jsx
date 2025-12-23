@@ -123,7 +123,7 @@ const ChatPage = () => {
       try {
         const { data } = await axios.get('/turn/credentials');
         if (data && Array.isArray(data)) {
-            console.log("✅ Using Metered.ca TURN Servers:", data);
+            console.log("✅ Using Metered.ca TURN Servers (Standard):", data);
             setIceServers(data);
         }
       } catch (error) {
@@ -139,10 +139,13 @@ const ChatPage = () => {
       const pc = new RTCPeerConnection({ 
           iceServers,
           bundlePolicy: 'max-bundle',
-          iceCandidatePoolSize: 10,
-          iceTransportPolicy: 'relay', // FORCE TURN usage to bypass WiFi restrictions
+          // No aggressive pooling or forced policies - let the browser decide
       });
       peerConnectionRef.current = pc;
+
+      pc.onicecandidateerror = (event) => {
+          console.error("⚠️ ICE Candidate Error:", event.errorCode, event.errorText, event.url);
+      };
 
       pc.onicecandidate = (event) => {
           if (event.candidate) {
