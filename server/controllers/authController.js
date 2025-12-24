@@ -391,8 +391,7 @@ const changePassword = async (req, res) => {
   const user = await User.findById(req.user._id);
 
   if (user && (await bcrypt.compare(currentPassword, user.password))) {
-    const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(newPassword, salt);
+    user.password = newPassword;
     await user.save();
     res.json({ message: 'Password updated successfully' });
   } else {
@@ -502,8 +501,7 @@ const resetPassword = async (req, res) => {
     }
 
     // Set new password
-    const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(newPassword, salt);
+    user.password = newPassword;
     
     // Clear OTP fields
     user.resetPasswordOtp = undefined;

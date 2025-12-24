@@ -20,8 +20,8 @@ const Navbar = () => {
   }, [location.pathname]);
 
   const handleLogout = () => {
-    logout();
     navigate('/login');
+    logout();
   };
 
   const navLinks = [
