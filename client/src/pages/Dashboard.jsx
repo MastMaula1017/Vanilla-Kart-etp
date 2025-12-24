@@ -202,7 +202,7 @@ const Dashboard = () => {
                            </Link>
 
                            {/* Expert Actions */}
-                           {user.roles?.includes('expert') && app.status === 'pending' && (
+                           {user.roles?.includes('expert') && app.expert?._id === user._id && app.status === 'pending' && (
                              <>
                                <button 
                                  onClick={() => handleStatusUpdate(app._id, 'confirmed')}

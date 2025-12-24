@@ -192,13 +192,24 @@ const updateAppointmentStatus = async (req, res) => {
   try {
     const appointment = await Appointment.findById(req.params.id);
 
-    if (appointment) {
-      appointment.status = status;
-      const updatedAppointment = await appointment.save();
-      res.json(updatedAppointment);
-    } else {
-      res.status(404).json({ message: 'Appointment not found' });
+    if (!appointment) {
+      return res.status(404).json({ message: 'Appointment not found' });
     }
+
+    // Authorization Check
+    if (status === 'confirmed') {
+      if (appointment.expert.toString() !== req.user._id.toString()) {
+        return res.status(403).json({ message: 'Not authorized to confirm this appointment' });
+      }
+    } else if (status === 'cancelled') {
+       if (appointment.expert.toString() !== req.user._id.toString() && appointment.customer.toString() !== req.user._id.toString()) {
+         return res.status(403).json({ message: 'Not authorized to cancel this appointment' });
+       }
+    }
+
+    appointment.status = status;
+    const updatedAppointment = await appointment.save();
+    res.json(updatedAppointment);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
