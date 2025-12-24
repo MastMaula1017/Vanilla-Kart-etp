@@ -114,7 +114,6 @@ const sendTokenResponse = (user, statusCode, res) => {
   console.log(`Setting Cookie: Secure=${options.secure}, SameSite=${options.sameSite}, Env='${process.env.NODE_ENV}'`);
 
   res.status(statusCode).cookie('jwt', token, options).json({
-    token,
     _id: user._id,
     name: user.name,
     email: user.email,

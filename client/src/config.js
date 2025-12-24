@@ -3,7 +3,6 @@
 
 const hostname = window.location.hostname;
 const isLocal = hostname === 'localhost' || hostname === '127.0.0.1';
-// Android WebView often serves from file:// (empty hostname) or custom scheme. Default to Prod for those.
 const API_URL = isLocal ? 'http://localhost:5000/api' : 'https://consultpro-backend-4344983db754.herokuapp.com/api';
 
 // Derived URLs
