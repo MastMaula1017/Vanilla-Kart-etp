@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Gift } from 'lucide-react';
 import ScratchCard from './ScratchCard';
+import confetti from 'canvas-confetti';
 
 const GlobalScratcher = () => {
     const [showScratcher, setShowScratcher] = useState(false);
@@ -18,7 +19,40 @@ const GlobalScratcher = () => {
         localStorage.setItem('scratcher_used', 'true');
     };
 
-    if (scratcherUsed) return null;
+    const handleClose = () => {
+        setShowScratcher(false);
+        if (scratcherUsed) {
+            triggerConfetti();
+        }
+    };
+
+    const triggerConfetti = () => {
+        const duration = 2000;
+        const end = Date.now() + duration;
+
+        (function frame() {
+            confetti({
+                particleCount: 5,
+                angle: 60,
+                spread: 55,
+                origin: { x: 0 },
+                colors: ['#6366f1', '#a855f7', '#ec4899', '#facc15']
+            });
+            confetti({
+                particleCount: 5,
+                angle: 120,
+                spread: 55,
+                origin: { x: 1 },
+                colors: ['#6366f1', '#a855f7', '#ec4899', '#facc15']
+            });
+
+            if (Date.now() < end) {
+                requestAnimationFrame(frame);
+            }
+        }());
+    };
+
+    if (scratcherUsed && !showScratcher) return null;
 
     return (
         <>
@@ -36,10 +70,10 @@ const GlobalScratcher = () => {
             {/* Scratcher Modal */}
             {showScratcher && (
                 <div className="fixed inset-0 z-[101] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowScratcher(false)}></div>
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleClose}></div>
                     <div className="relative z-10 animate-in zoom-in-90 duration-300">
                         <ScratchCard 
-                            onClose={() => setShowScratcher(false)} 
+                            onClose={handleClose} 
                             onReveal={handleReveal}
                         />
                     </div>

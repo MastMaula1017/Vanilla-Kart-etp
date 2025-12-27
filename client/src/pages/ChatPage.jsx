@@ -334,9 +334,7 @@ const ChatPage = () => {
         const formData = new FormData();
         formData.append('file', selectedFile);
         try {
-            const uploadRes = await axios.post('/upload', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
+            const uploadRes = await axios.post('/upload', formData);
             fileUrl = uploadRes.data.fileUrl;
             messageType = 'file';
         } catch (error) { setUploading(false); return; }

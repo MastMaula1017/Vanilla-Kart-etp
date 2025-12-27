@@ -92,10 +92,17 @@ exports.getRandomCoupon = async (req, res) => {
     // 1. Active
     // 2. Not expired
     // 3. Usage limit not reached (if limit exists)
-    const activeCoupons = await Coupon.find({
+    // Find coupons that are Active and Not Expired
+    const potentialCoupons = await Coupon.find({
       isActive: true,
       expirationDate: { $gt: new Date() },
-      usageLimit: null // strict check for unlimited availability
+      code: { $in: ['RANDOM5', 'RANDOM10'] }
+    });
+
+    // Filter out coupons that have reached their usage limit
+    const activeCoupons = potentialCoupons.filter(coupon => {
+      if (!coupon.usageLimit) return true; // Unlimited
+      return coupon.usedCount < coupon.usageLimit;
     });
 
     if (activeCoupons.length === 0) {

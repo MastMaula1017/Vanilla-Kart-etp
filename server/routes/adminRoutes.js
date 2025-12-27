@@ -44,3 +44,5 @@ router.get('/verifications', authorize('admin', 'moderator'), getVerificationReq
 router.put('/verifications/:id', authorize('admin', 'moderator'), updateVerificationStatus);
 
 module.exports = router;
+
+
