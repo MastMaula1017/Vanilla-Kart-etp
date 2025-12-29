@@ -37,7 +37,16 @@ app.use(cookieParser());
 
 // Security Middleware
 app.use(helmet({
-  crossOriginResourcePolicy: { policy: "cross-origin" }
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"], // Allow callbacks if needed
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https://res.cloudinary.com", "https://images.unsplash.com", "https://lh3.googleusercontent.com"], // Allow Cloudinary & Google Auth images
+      connectSrc: ["'self'", "https://joyful-gaufre-719afc.netlify.app", "https://consultpro.vanshraturi.me"],
+    },
+  },
 }));
 // app.use(mongoSanitize());
 // app.use(xss()); // Incompatible with newer Express/Node versions

@@ -254,6 +254,7 @@ const uploadProfilePhoto = async (req, res) => {
     if (!req.file) {
       return res.status(400).json({ message: 'No file uploaded' });
     }
+    console.log('File uploaded to Cloudinary:', req.file); // Debug log
 
     const user = await User.findById(req.user._id);
     if (user) {
