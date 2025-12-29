@@ -32,6 +32,15 @@ const ProfilePage = () => {
   });
 
   useEffect(() => {
+    if (message) {
+      const timer = setTimeout(() => {
+        setMessage(null);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [message]);
+
+  useEffect(() => {
     if(user) {
         // Create full week template to ensure all days are shown
         const fullWeekTemplate = [
@@ -101,6 +110,7 @@ const ProfilePage = () => {
       
       updateUser(data);
       setMessage({ type: 'success', text: 'Profile updated successfully' });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
       setMessage({ type: 'error', text: error.response?.data?.message || 'Update failed' });
     } finally {
@@ -123,6 +133,7 @@ const ProfilePage = () => {
       });
       setMessage({ type: 'success', text: 'Password updated successfully' });
       setFormData(prev => ({ ...prev, currentPassword: '', newPassword: '', confirmPassword: '' }));
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
        setMessage({ type: 'error', text: error.response?.data?.message || 'Password update failed' });
     } finally {
@@ -146,7 +157,7 @@ const ProfilePage = () => {
 
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Sidebar Navigation */}
-        <div className="w-full lg:w-64 flex-shrink-0 space-y-2">
+        <div className="w-full lg:w-64 flex-shrink-0 space-y-2 lg:sticky lg:top-24 self-start">
             <button 
                 onClick={() => setActiveTab('details')}
                 className={`w-full text-left px-4 py-3 rounded-xl flex items-center space-x-3 transition-all font-medium ${

@@ -257,7 +257,9 @@ const uploadProfilePhoto = async (req, res) => {
 
     const user = await User.findById(req.user._id);
     if (user) {
-      user.profileImage = req.file.path;
+      // Cloudinary returns the URL in req.file.path
+      const fileUrl = req.file.path;
+      user.profileImage = fileUrl;
       const updatedUser = await user.save();
       
       sendTokenResponse(updatedUser, 200, res);
@@ -265,7 +267,8 @@ const uploadProfilePhoto = async (req, res) => {
       res.status(404).json({ message: 'User not found' });
     }
   } catch (error) {
-    res.status(500).json({ message: 'Server Error' });
+    console.error("Profile Upload Error:", error);
+    res.status(500).json({ message: 'Server Error', error: error.message });
   }
 };
 
@@ -278,7 +281,9 @@ const uploadCoverPhoto = async (req, res) => {
 
     const user = await User.findById(req.user._id);
     if (user) {
-      user.coverImage = req.file.path;
+      // Cloudinary returns the URL in req.file.path
+      const fileUrl = req.file.path;
+      user.coverImage = fileUrl;
       const updatedUser = await user.save();
       
       sendTokenResponse(updatedUser, 200, res);
@@ -286,7 +291,8 @@ const uploadCoverPhoto = async (req, res) => {
       res.status(404).json({ message: 'User not found' });
     }
   } catch (error) {
-    res.status(500).json({ message: 'Server Error' });
+    console.error("Profile Upload Error:", error);
+    res.status(500).json({ message: 'Server Error', error: error.message });
   }
 };
 
@@ -371,7 +377,9 @@ const getUserProfile = async (req, res) => {
         name: user.name,
         email: user.email,
         roles: user.roles,
-        expertProfile: user.expertProfile
+        expertProfile: user.expertProfile,
+        profileImage: user.profileImage,
+        coverImage: user.coverImage
       });
     } else {
       res.status(404).json({ message: 'User not found' });
@@ -531,7 +539,8 @@ const getUserById = async (req, res) => {
       res.status(404).json({ message: 'User not found' });
     }
   } catch (error) {
-    res.status(500).json({ message: 'Server Error' });
+    console.error("Profile Upload Error:", error);
+    res.status(500).json({ message: 'Server Error', error: error.message });
   }
 };
 
@@ -559,12 +568,8 @@ const uploadVerificationDocument = async (req, res) => {
           user.expertProfile.verificationDocuments = [];
       }
       
-      let fileUrl = req.file.path;
-      if (req.file.filename) {
-          // Local storage used
-          const baseUrl = process.env.BACKEND_URL || `${req.protocol}://${req.get('host')}`;
-          fileUrl = `${baseUrl}/uploads/${req.file.filename}`;
-      }
+      // Cloudinary returns the URL in req.file.path
+      const fileUrl = req.file.path;
       
       user.expertProfile.verificationDocuments.push(fileUrl);
       user.expertProfile.verificationStatus = 'pending';

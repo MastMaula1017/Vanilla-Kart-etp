@@ -385,7 +385,7 @@ const ExpertProfile = () => {
             </div>
         )}
 
-        {user && expert && user._id === expert._id ? (
+        {user && expert && user._id?.toString() === expert._id?.toString() ? (
             <div className="bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-900/50 rounded-xl p-6 text-center">
                 <AlertCircle className="mx-auto h-12 w-12 text-yellow-500 mb-3" />
                 <h3 className="text-lg font-bold text-yellow-800 dark:text-yellow-500 mb-2">You cannot book yourself</h3>

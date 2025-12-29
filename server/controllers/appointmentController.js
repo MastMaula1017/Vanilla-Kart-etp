@@ -33,7 +33,7 @@ const getBookedSlots = async (req, res) => {
 const createAppointment = async (req, res) => {
   const { expertId, date, startTime, endTime, notes, payment, couponCode } = req.body;
 
-  if (req.user._id.toString() === expertId) {
+  if (req.user._id.toString() === expertId.toString()) {
     return res.status(400).json({ message: 'You cannot book an appointment with yourself' });
   }
 
