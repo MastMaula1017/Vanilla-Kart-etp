@@ -14,6 +14,7 @@ const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: 'consultpro/profiles',
+    resource_type: 'auto', // Allow other types if needed, though we filter for images
     allowed_formats: ['jpg', 'png', 'jpeg', 'webp'],
     transformation: [{ width: 500, height: 500, crop: 'limit' }]
   }

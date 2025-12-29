@@ -68,6 +68,15 @@ app.use('/api/coupons', require('./routes/couponRoutes'));
 app.use('/api/notifications', require('./routes/notificationRoutes'));
 app.use('/api/announcements', require('./routes/announcementRoutes'));
 
+// Global Error Handler
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({
+    message: err.message || 'Internal Server Error',
+    error: process.env.NODE_ENV === 'production' ? {} : err
+  });
+});
+
 // Cron Job for Appointment Reminders (Every minute)
 const cron = require('node-cron');
 const Appointment = require('./models/Appointment');
