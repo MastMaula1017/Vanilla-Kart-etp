@@ -279,6 +279,7 @@ const uploadCoverPhoto = async (req, res) => {
     if (!req.file) {
       return res.status(400).json({ message: 'No file uploaded' });
     }
+    console.log('Cover upload req.file:', req.file);
 
     const user = await User.findById(req.user._id);
     if (user) {

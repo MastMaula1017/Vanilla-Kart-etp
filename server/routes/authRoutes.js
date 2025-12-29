@@ -28,8 +28,29 @@ router.get('/debug-cookie', (req, res) => {
 });
 router.get('/profile', protect, getUserProfile);
 router.put('/profile', protect, updateUserProfile);
-router.post('/profile/image', protect, upload.single('image'), uploadProfilePhoto);
-router.post('/profile/cover', protect, upload.single('image'), uploadCoverPhoto);
+const uploadMiddleware = (req, res, next) => {
+  upload.single('image')(req, res, (err) => {
+    if (err) {
+      console.error("Multer Upload Error:", err);
+      // Return JSON directly to avoid default HTML error page
+      return res.status(400).json({ message: 'Image upload failed', error: err.message, stack: err.stack });
+    }
+    next();
+  });
+};
+
+const uploadCoverMiddleware = (req, res, next) => {
+  upload.single('image')(req, res, (err) => {
+    if (err) {
+      console.error("Multer Cover Upload Error:", err);
+      return res.status(400).json({ message: 'Cover upload failed', error: err.message, stack: err.stack });
+    }
+    next();
+  });
+};
+
+router.post('/profile/image', protect, uploadMiddleware, uploadProfilePhoto);
+router.post('/profile/cover', protect, uploadCoverMiddleware, uploadCoverPhoto);
 router.post('/profile/verification', protect, upload.single('document'), uploadVerificationDocument);
 router.put('/password', protect, changePassword);
 router.put('/onboarding-seen', protect, markOnboardingSeen);
