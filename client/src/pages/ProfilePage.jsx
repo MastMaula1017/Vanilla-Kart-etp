@@ -268,60 +268,62 @@ const ProfilePage = () => {
                                                     });
                                                     updateUser(data);
                                                     setMessage({ type: 'success', text: 'Profile photo updated' });
-                                                } catch (error) {
-                                                    setMessage({ type: 'error', text: 'Failed to upload image' });
-                                                } finally {
-                                                    setLoading(false);
-                                                }
-                                            }}
-                                        />
-                                    </div>
-                                    <div>
-                                        <h3 className="text-lg font-bold text-gray-900 dark:text-white">Profile Photo</h3>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400">Allowed formats: JPG, PNG, WEBP. Max size: 5MB.</p>
-                                    </div>
-                                </div>
-
-                                {/* Cover Image Upload */}
-                                {user?.roles?.includes('expert') && (
-                                    <div className="flex items-center space-x-6 mb-8">
-                                        <div className="relative group w-full max-w-md h-32 rounded-xl overflow-hidden border-2 border-gray-100 dark:border-gray-700 shadow-sm bg-gray-50 dark:bg-zinc-800">
-                                            {user?.coverImage ? (
-                                                <img src={user.coverImage} alt="Cover" className="w-full h-full object-cover" />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center text-gray-400">
-                                                    <span className="text-sm font-medium">No Cover Image</span>
-                                                </div>
-                                            )}
-                                            <label htmlFor="cover-upload" className="absolute inset-0 flex items-center justify-center bg-black/50 text-white opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity backdrop-blur-sm">
-                                                <span className="text-xs font-bold uppercase tracking-wider flex items-center">
-                                                    <Shield size={16} className="mr-2" /> Change Cover
-                                                </span>
-                                            </label>
-                                            <input 
-                                                id="cover-upload" 
-                                                type="file" 
-                                                accept="image/*" 
-                                                className="hidden" 
-                                                onChange={async (e) => {
-                                                    const file = e.target.files[0];
-                                                    if(!file) return;
-
-                                                    const formData = new FormData();
-                                                    formData.append('image', file);
-                                                    
-                                                    try {
-                                                        setLoading(true);
-                                                        const { data } = await axios.post('/auth/profile/cover', formData, {
-                                                            headers: { 'Content-Type': 'multipart/form-data' }
-                                                        });
-                                                        updateUser(data);
-                                                        setMessage({ type: 'success', text: 'Cover photo updated' });
                                                     } catch (error) {
-                                                        setMessage({ type: 'error', text: 'Failed to upload cover' });
+                                                        const errorMsg = error.response?.data?.error || error.response?.data?.message || error.message || 'Failed to upload image';
+                                                        setMessage({ type: 'error', text: errorMsg });
                                                     } finally {
                                                         setLoading(false);
                                                     }
+                                                }}
+                                            />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-lg font-bold text-gray-900 dark:text-white">Profile Photo</h3>
+                                            <p className="text-sm text-gray-500 dark:text-gray-400">Allowed formats: JPG, PNG, WEBP. Max size: 5MB.</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Cover Image Upload */}
+                                    {user?.roles?.includes('expert') && (
+                                        <div className="flex items-center space-x-6 mb-8">
+                                            <div className="relative group w-full max-w-md h-32 rounded-xl overflow-hidden border-2 border-gray-100 dark:border-gray-700 shadow-sm bg-gray-50 dark:bg-zinc-800">
+                                                {user?.coverImage ? (
+                                                    <img src={user.coverImage} alt="Cover" className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                                        <span className="text-sm font-medium">No Cover Image</span>
+                                                    </div>
+                                                )}
+                                                <label htmlFor="cover-upload" className="absolute inset-0 flex items-center justify-center bg-black/50 text-white opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity backdrop-blur-sm">
+                                                    <span className="text-xs font-bold uppercase tracking-wider flex items-center">
+                                                        <Shield size={16} className="mr-2" /> Change Cover
+                                                    </span>
+                                                </label>
+                                                <input 
+                                                    id="cover-upload" 
+                                                    type="file" 
+                                                    accept="image/*" 
+                                                    className="hidden" 
+                                                    onChange={async (e) => {
+                                                        const file = e.target.files[0];
+                                                        if(!file) return;
+
+                                                        const formData = new FormData();
+                                                        formData.append('image', file);
+                                                        
+                                                        try {
+                                                            setLoading(true);
+                                                            const { data } = await axios.post('/auth/profile/cover', formData, {
+                                                                headers: { 'Content-Type': 'multipart/form-data' }
+                                                            });
+                                                            updateUser(data);
+                                                            setMessage({ type: 'success', text: 'Cover photo updated' });
+                                                        } catch (error) {
+                                                            const errorMsg = error.response?.data?.error || error.response?.data?.message || 'Failed to upload cover';
+                                                            setMessage({ type: 'error', text: errorMsg });
+                                                        } finally {
+                                                            setLoading(false);
+                                                        }
                                                 }}
                                             />
                                         </div>
