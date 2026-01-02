@@ -35,6 +35,7 @@ router.put('/users/:id/revoke-expert', authorize('admin', 'moderator'), revokeEx
 router.put('/users/:id/grant-expert', authorize('admin', 'moderator'), grantExpertRole);
 
 // Inquiries (Admin, Inquiry Support & Moderator)
+
 router.get('/inquiries', authorize('admin', 'inquiry_support', 'moderator'), getAllInquiries);
 router.put('/inquiries/:id', authorize('admin', 'inquiry_support', 'moderator'), updateInquiryStatus);
 router.post('/inquiries/:id/reply', authorize('admin', 'inquiry_support', 'moderator'), replyToInquiry);
