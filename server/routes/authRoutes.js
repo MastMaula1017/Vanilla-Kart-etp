@@ -5,6 +5,7 @@ const { authLimiter, sensitiveLimiter } = require('../middleware/rateLimiters');
 
 const { registerUser, loginUser, logoutUser, getUserProfile, updateUserProfile, changePassword, forgotPassword, resetPassword, getUserById, uploadProfilePhoto, uploadCoverPhoto, googleLogin, uploadVerificationDocument, markOnboardingSeen, sendVerificationOTP, verifyEmailOTP } = require('../controllers/authController');
 const upload = require('../middleware/uploadMiddleware');
+const verificationUpload = require('../middleware/verificationUploadMiddleware');
 
 router.post('/verify-email/send', sensitiveLimiter, sendVerificationOTP);
 router.post('/verify-email/validate', sensitiveLimiter, verifyEmailOTP);
@@ -13,6 +14,8 @@ router.post('/register', sensitiveLimiter, registerUser);
 router.post('/login', authLimiter, loginUser);
 router.post('/logout', logoutUser);
 router.post('/google', googleLogin);
+router.post('/google', googleLogin);
+router.get('/debug-config', require('../controllers/authController').checkConfig);
 router.get('/debug-cookie', (req, res) => {
   res.json({
     cookies: req.cookies || 'No cookies object',
@@ -51,7 +54,7 @@ const uploadCoverMiddleware = (req, res, next) => {
 
 router.post('/profile/image', protect, uploadMiddleware, uploadProfilePhoto);
 router.post('/profile/cover', protect, uploadCoverMiddleware, uploadCoverPhoto);
-router.post('/profile/verification', protect, upload.single('document'), uploadVerificationDocument);
+router.post('/profile/verification', protect, verificationUpload.single('document'), uploadVerificationDocument);
 router.put('/password', protect, changePassword);
 router.put('/onboarding-seen', protect, markOnboardingSeen);
 router.post('/forgot-password', sensitiveLimiter, forgotPassword);

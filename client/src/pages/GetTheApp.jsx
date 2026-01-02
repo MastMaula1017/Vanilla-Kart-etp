@@ -5,26 +5,10 @@ import Footer from '../components/Footer';
 
 const GetTheApp = () => {
     const [activeStats, setActiveStats] = useState({
-        rating: '4.9',
-        downloads: '10M+',
-        platform: 'App Store'
+        rating: '4.8',
+        downloads: '50M+',
+        platform: 'Android'
     });
-
-    const handleGoogleHover = () => {
-        setActiveStats({
-            rating: '4.8',
-            downloads: '50M+',
-            platform: 'Google Play'
-        });
-    };
-
-    const handleAppleHover = () => {
-        setActiveStats({
-            rating: '4.9',
-            downloads: '20M+',
-            platform: 'App Store'
-        });
-    };
 
     return (
         <div className="min-h-screen bg-gray-950 text-white overflow-hidden relative">
@@ -41,7 +25,7 @@ const GetTheApp = () => {
                     <div className="lg:w-1/2 space-y-8 animate-fade-in-up">
                         <div className="inline-flex items-center px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
                             <span className="w-2 h-2 rounded-full bg-green-400 mr-2 animate-pulse"></span>
-                            <span className="text-sm font-medium text-gray-300">Available on iOS & Android</span>
+                            <span className="text-sm font-medium text-gray-300">Available on Android</span>
                         </div>
 
                         <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight leading-tight">
@@ -57,35 +41,19 @@ const GetTheApp = () => {
 
                         <div className="flex flex-col sm:flex-row gap-4 pt-4">
                             <a
-                                href="#"
+                                href="/ConsultPro_1_1.0.apk"
+                                download="ConsultPro_1_1.0.apk"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                onMouseEnter={handleAppleHover}
-                                onMouseLeave={handleAppleHover}
                                 className="group relative overflow-hidden rounded-xl bg-white text-gray-900 px-8 py-4 transition-all hover:scale-105 hover:shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)]"
                             >
                                 <div className="relative z-10 flex items-center justify-center gap-3">
-                                    <Apple size={28} className="fill-current" />
-                                    <div className="text-left">
-                                        <div className="text-[10px] uppercase font-bold tracking-wider opacity-60">Download on the</div>
-                                        <div className="text-xl font-bold leading-none">App Store</div>
+                                    <div className="bg-gray-900 text-white p-1 rounded-full">
+                                      <Zap size={20} className="fill-current" />
                                     </div>
-                                </div>
-                            </a>
-
-                            <a
-                                href="#"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                onMouseEnter={handleGoogleHover}
-                                onMouseLeave={handleAppleHover}
-                                className="group relative overflow-hidden rounded-xl bg-white/10 backdrop-blur-md border border-white/10 text-white px-8 py-4 transition-all hover:bg-white/20 hover:scale-105"
-                            >
-                                <div className="relative z-10 flex items-center justify-center gap-3">
-                                    <Play size={28} className="fill-current" />
                                     <div className="text-left">
-                                        <div className="text-[10px] uppercase font-bold tracking-wider opacity-60">Get it on</div>
-                                        <div className="text-xl font-bold leading-none">Google Play</div>
+                                        <div className="text-[10px] uppercase font-bold tracking-wider opacity-60">Download APK</div>
+                                        <div className="text-xl font-bold leading-none">For Android</div>
                                     </div>
                                 </div>
                             </a>

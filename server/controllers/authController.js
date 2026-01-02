@@ -622,6 +622,17 @@ const markOnboardingSeen = async (req, res) => {
 };
 
 
+const checkConfig = (req, res) => {
+  res.json({
+    node_env: process.env.NODE_ENV,
+    cloudinary: {
+      cloud_name: process.env.CLOUDINARY_CLOUD_NAME ? 'Present' : 'Missing',
+      api_key: process.env.CLOUDINARY_API_KEY ? 'Present' : 'Missing',
+      api_secret: process.env.CLOUDINARY_API_SECRET ? 'Present' : 'Missing'
+    }
+  });
+};
+
 module.exports = {
   registerUser,
   loginUser,
@@ -638,6 +649,7 @@ module.exports = {
   logoutUser,
   markOnboardingSeen,
   sendVerificationOTP,
-  verifyEmailOTP
+  verifyEmailOTP,
+  checkConfig
 };
 

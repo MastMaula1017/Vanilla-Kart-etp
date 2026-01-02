@@ -14,7 +14,7 @@ const apiLimiter = rateLimit({
 // Strict Limiter for Login/Auth routes to prevent brute force
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // Limit each IP to 10 login attempts per windowMs
+  max: 30, // Limit each IP to 10 login attempts per windowMs
   standardHeaders: true,
   legacyHeaders: false,
   message: {
@@ -25,7 +25,7 @@ const authLimiter = rateLimit({
 // Limiter for Password Reset / OTPs to prevent spamming
 const sensitiveLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
-  max: 5, // Limit each IP to 5 requests per hour
+  max: 35, // Limit each IP to 5 requests per hour
   standardHeaders: true,
   legacyHeaders: false,
   message: {

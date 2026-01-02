@@ -251,8 +251,11 @@ const ExpertList = () => {
                                         {expert.name}
                                     </h3>
                                     {expert.expertProfile?.verificationStatus === 'verified' && (
-                                        <div className="relative group/verify">
+                                        <div className="relative group/verify flex items-center">
                                             <CheckCircle size={14} className="text-blue-500 fill-blue-500 text-white flex-shrink-0 cursor-help" />
+                                            <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 text-[10px] font-bold text-white bg-gray-900 rounded opacity-0 group-hover/verify:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap shadow-lg select-none z-50">
+                                                Verified
+                                            </span>
                                         </div>
                                     )}
                                 </div>
