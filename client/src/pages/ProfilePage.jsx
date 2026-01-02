@@ -91,16 +91,20 @@ const ProfilePage = () => {
     setLoading(true);
     setMessage(null);
 
-    if (user.roles?.includes('expert') && Number(formData.hourlyRate) < 200) {
+    // Check if user is expert OR if they are trying to become one (has filled specialization)
+    const isUpgrading = !user.roles?.includes('expert') && formData.specialization;
+    
+    if ((user.roles?.includes('expert') || isUpgrading) && Number(formData.hourlyRate) < 200) {
         setMessage({ type: 'error', text: 'Hourly rate must be at least ₹200' });
         setLoading(false);
         return;
     }
+    
     try {
       const { data } = await axios.put('/auth/profile', {
         name: formData.name,
         email: formData.email,
-        expertProfile: user.roles?.includes('expert') ? {
+        expertProfile: (user.roles?.includes('expert') || isUpgrading) ? {
             specialization: formData.specialization,
             hourlyRate: formData.hourlyRate,
             bio: formData.bio,
@@ -365,12 +369,16 @@ const ProfilePage = () => {
                                 </div>
                             </div>
 
-                            {user?.roles?.includes('expert') && (
-                                <div className="pt-6 border-t border-gray-100 dark:border-gray-700">
+                            <div className="pt-6 border-t border-gray-100 dark:border-gray-700">
                                     <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
                                         <Briefcase className="mr-2 text-violet-500" size={24} />
-                                        Expert Profile
+                                        {user?.roles?.includes('expert') ? 'Expert Profile' : 'Become an Expert'}
                                     </h2>
+                                    {!user?.roles?.includes('expert') && (
+                                        <div className="mb-6 p-4 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 rounded-xl text-sm">
+                                            Fill out the details below to apply for an expert account. You can start earning by providing consultations.
+                                        </div>
+                                    )}
                                     
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                         <div className={inputGroupClass}>
@@ -418,22 +426,19 @@ const ProfilePage = () => {
                                         </div>
                                     </div>
                                 </div>
-                            )}
 
                             <div className="pt-6 border-t border-gray-100 dark:border-gray-700 flex justify-end">
                                 <button 
                                     type="submit" 
                                     disabled={loading}
-                                    className="px-8 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold rounded-xl shadow-lg hover:shadow-violet-500/30 hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:transform-none flex items-center"
+                                    className="flex items-center px-8 py-3 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-violet-600/20 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {loading ? (
-                                        <>Updating...</>
+                                        <Loader className="animate-spin mr-2" size={20} />
                                     ) : (
-                                        <>
-                                            <Save size={18} className="mr-2" />
-                                            Save Changes
-                                        </>
+                                        <Save className="mr-2" size={20} />
                                     )}
+                                    {loading ? 'Saving...' : (user?.roles?.includes('expert') ? 'Save Changes' : 'Register as Expert')}
                                 </button>
                             </div>
                         </form>

@@ -27,11 +27,13 @@ import ShimmerButton from '@/components/magicui/ShimmerButton';
 
 import WordPullUp from '@/components/magicui/WordPullUp';
 
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { Gift } from 'lucide-react';
+import AuthContext from '../context/AuthContext';
 
 
 const Home = () => {
+  const { user } = useContext(AuthContext);
 
   return (
     <div className="space-y-24 pb-12 dark:bg-gray-950 transition-colors duration-300 relative">
@@ -65,10 +67,10 @@ const Home = () => {
                </ShimmerButton>
             </Link>
             <Link 
-              to="/register?role=expert" 
+              to={user ? (user.roles?.includes('expert') ? "/dashboard" : "/profile") : "/register?role=expert"} 
               className="group inline-flex items-center rounded-full border-2 border-indigo-300 px-8 py-3 text-lg font-bold text-white transition-all hover:bg-white/10 hover:border-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-indigo-600"
             >
-              Join as Advisor
+              {user?.roles?.includes('expert') ? 'Go to Dashboard' : 'Join as Advisor'}
               <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
             </Link>
           </div>

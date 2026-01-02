@@ -219,15 +219,29 @@ const updateUserProfile = async (req, res) => {
         user.password = req.body.password;
       }
       
-      // Update expert profile if one of the roles is expert
-      if (user.roles.includes('expert') && req.body.expertProfile) {
+      // Update expert profile if one of the roles is expert OR if they are applying to become one
+      if ((user.roles.includes('expert') || req.body.expertProfile) && req.body.expertProfile) {
+          // Validation for new or existing experts
           if (req.body.expertProfile.hourlyRate && Number(req.body.expertProfile.hourlyRate) < 200) {
               return res.status(400).json({ message: 'Hourly Rate must be at least ₹200' });
           }
+           if (req.body.expertProfile.specialization === '') {
+              return res.status(400).json({ message: 'Specialization is required' });
+          }
+
           user.expertProfile = {
               ...user.expertProfile,
               ...req.body.expertProfile
           };
+          
+          // If they weren't an expert before, add the role
+          if (!user.roles.includes('expert')) {
+             user.roles.push('expert');
+             // Initialize default availability if not provided
+             if (!user.expertProfile.availability) {
+                 user.expertProfile.availability = [];
+             }
+          }
       }
 
       const updatedUser = await user.save();

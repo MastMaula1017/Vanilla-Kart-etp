@@ -1,7 +1,11 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, CheckCircle, DollarSign, Globe, Shield, Users, Zap } from 'lucide-react';
+import { useContext } from 'react';
+import AuthContext from '../context/AuthContext';
 
 const BecomeExpert = () => {
+  const { user } = useContext(AuthContext);
+
   return (
     <div className="bg-white dark:bg-gray-950 transition-colors duration-300">
       
@@ -26,10 +30,10 @@ const BecomeExpert = () => {
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
-                to="/register?role=expert"
+                to={user ? (user.roles?.includes('expert') ? "/dashboard" : "/profile") : "/register?role=expert"}
                 className="px-8 py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold rounded-xl hover:scale-105 transition-transform shadow-xl flex items-center"
               >
-                Become an Advisor <ArrowRight className="ml-2" size={20} />
+                {user?.roles?.includes('expert') ? 'Go to Dashboard' : 'Become an Advisor'} <ArrowRight className="ml-2" size={20} />
               </Link>
               <Link
                 to="/about"
@@ -146,10 +150,10 @@ const BecomeExpert = () => {
         <div className="container mx-auto px-4 text-center">
            <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-8">Ready to inspire the next generation?</h2>
            <Link
-                to="/register?role=expert"
+                to={user ? (user.roles?.includes('expert') ? "/dashboard" : "/profile") : "/register?role=expert"}
                 className="inline-flex px-10 py-5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl shadow-xl shadow-indigo-600/20 text-lg transition-all hover:-translate-y-1"
           >
-              Apply as an Expert
+              {user?.roles?.includes('expert') ? 'Go to Dashboard' : 'Apply as an Expert'}
            </Link>
            <p className="mt-6 text-gray-500 dark:text-gray-400 text-sm">
              No credit card required for sign up. Vetted verification process.
