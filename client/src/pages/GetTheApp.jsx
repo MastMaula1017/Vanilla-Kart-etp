@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Apple, Play, Shield, Zap } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Apple, Play, Shield, Zap, MonitorDown } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 
@@ -9,6 +9,28 @@ const GetTheApp = () => {
         downloads: '50M+',
         platform: 'Android'
     });
+
+    const [deferredPrompt, setDeferredPrompt] = useState(null);
+
+    useEffect(() => {
+        const handleBeforeInstallPrompt = (e) => {
+            e.preventDefault();
+            setDeferredPrompt(e);
+        };
+
+        window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+        return () => {
+            window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+        };
+    }, []);
+
+    const handleInstallClick = async () => {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        setDeferredPrompt(null);
+    };
 
     return (
         <div className="min-h-screen bg-gray-950 text-white overflow-hidden relative">
@@ -41,8 +63,8 @@ const GetTheApp = () => {
 
                         <div className="flex flex-col sm:flex-row gap-4 pt-4">
                             <a
-                                href="/ConsultPro_1_1.0.apk"
-                                download="ConsultPro_1_1.0.apk"
+                                href="/ConsultPro_2_1.0.apk"
+                                download="ConsultPro_2_1.0.apk"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="group relative overflow-hidden rounded-xl bg-white text-gray-900 px-8 py-4 transition-all hover:scale-105 hover:shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)]"
@@ -57,6 +79,23 @@ const GetTheApp = () => {
                                     </div>
                                 </div>
                             </a>
+
+                            {deferredPrompt && (
+                                <button
+                                    onClick={handleInstallClick}
+                                    className="group relative overflow-hidden rounded-xl bg-gray-800 text-white px-8 py-4 transition-all hover:scale-105 hover:bg-gray-700 border border-white/10"
+                                >
+                                    <div className="relative z-10 flex items-center justify-center gap-3">
+                                        <div className="bg-white text-gray-900 p-1 rounded-full">
+                                            <MonitorDown size={20} />
+                                        </div>
+                                        <div className="text-left">
+                                            <div className="text-[10px] uppercase font-bold tracking-wider opacity-60">Install App</div>
+                                            <div className="text-xl font-bold leading-none">For Android/IOS Web App</div>
+                                        </div>
+                                    </div>
+                                </button>
+                            )}
                         </div>
 
                         <div className="flex items-center gap-8 pt-8 border-t border-white/10">
