@@ -81,20 +81,25 @@ const GetTheApp = () => {
                             </a>
 
                             {deferredPrompt && (
-                                <button
-                                    onClick={handleInstallClick}
-                                    className="group relative overflow-hidden rounded-xl bg-gray-800 text-white px-8 py-4 transition-all hover:scale-105 hover:bg-gray-700 border border-white/10"
-                                >
-                                    <div className="relative z-10 flex items-center justify-center gap-3">
-                                        <div className="bg-white text-gray-900 p-1 rounded-full">
-                                            <MonitorDown size={20} />
-                                        </div>
-                                        <div className="text-left">
-                                            <div className="text-[10px] uppercase font-bold tracking-wider opacity-60">Install App</div>
-                                            <div className="text-xl font-bold leading-none">For Android/IOS Web App</div>
-                                        </div>
+                                <div className="relative group/btn">
+                                    <div className="absolute -top-3 right-4 bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-[10px] font-bold px-3 py-1 rounded-full z-20 shadow-lg border border-white/20 animate-bounce">
+                                        Recommended
                                     </div>
-                                </button>
+                                    <button
+                                        onClick={handleInstallClick}
+                                        className="group relative overflow-hidden rounded-xl bg-gray-800 text-white px-8 py-4 transition-all hover:scale-105 hover:bg-gray-700 border border-white/10"
+                                    >
+                                        <div className="relative z-10 flex items-center justify-center gap-3">
+                                            <div className="bg-white text-gray-900 p-1 rounded-full">
+                                                <MonitorDown size={20} />
+                                            </div>
+                                            <div className="text-left">
+                                                <div className="text-[10px] uppercase font-bold tracking-wider opacity-60">Install App</div>
+                                                <div className="text-xl font-bold leading-none">For Android/IOS Web App</div>
+                                            </div>
+                                        </div>
+                                    </button>
+                                </div>
                             )}
                         </div>
 
