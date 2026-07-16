@@ -39,6 +39,7 @@ import AdminEarnings from './pages/admin/AdminEarnings';
 import ScrollToTop from './components/ScrollToTop';
 
 import { SocketProvider } from './context/SocketContext';
+import { PWAProvider } from './context/PWAContext';
 import { Toaster } from 'react-hot-toast';
 import GlobalScratcher from './components/GlobalScratcher';
 
@@ -65,6 +66,7 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 dark:text-gray-100 transition-colors duration-300 flex flex-col">
       <SocketProvider>
+       <PWAProvider>
        <Toaster position="top-center" />
        <ScrollToTop />
        {!isAdminRoute && <Navbar />}
@@ -162,6 +164,7 @@ function App() {
         </Routes>
         </AnimatePresence>
       </div>
+      </PWAProvider>
       </SocketProvider>
       <Footer />
       <GlobalScratcher />

@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Apple, Play, Shield, Zap, MonitorDown } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import { usePWA } from '../context/PWAContext';
 
 const GetTheApp = () => {
     const [activeStats, setActiveStats] = useState({
@@ -10,20 +11,7 @@ const GetTheApp = () => {
         platform: 'Android'
     });
 
-    const [deferredPrompt, setDeferredPrompt] = useState(null);
-
-    useEffect(() => {
-        const handleBeforeInstallPrompt = (e) => {
-            e.preventDefault();
-            setDeferredPrompt(e);
-        };
-
-        window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-
-        return () => {
-            window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-        };
-    }, []);
+    const { deferredPrompt, setDeferredPrompt } = usePWA();
 
     const handleInstallClick = async () => {
         if (!deferredPrompt) return;

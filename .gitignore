@@ -9,6 +9,8 @@
 Thumbs.db
 ehthumbs.db
 desktop.ini
+client_secret_*.json
+client_secret.json
 
 # ===============================
 # Editor / IDE files

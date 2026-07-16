@@ -27,8 +27,11 @@ const cookieParser = require('cookie-parser');
 
 // Middleware
 app.use(cors({
-  origin: ["https://joyful-gaufre-719afc.netlify.app", "http://localhost:5173", "http://localhost:5174", "http://localhost:5175", "http://consultpro.vanshraturi.me", "https://consultpro.vanshraturi.me"],
-  methods: ["GET", "POST", "PUT", "DELETE"],
+  origin: function (origin, callback) {
+    // Allow all origins
+    callback(null, true);
+  },
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
   credentials: true
 }));
 
@@ -143,8 +146,10 @@ cron.schedule('* * * * *', async () => {
 
 const io = new Server(server, {
   cors: {
-    origin: ["https://joyful-gaufre-719afc.netlify.app", "http://localhost:5173", "http://localhost:5174", "http://localhost:5175", "http://consultpro.vanshraturi.me", "https://consultpro.vanshraturi.me"],
-    methods: ["GET", "POST"],
+    origin: function (origin, callback) {
+      callback(null, true);
+    },
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     credentials: true
   }
 });
